@@ -22,24 +22,17 @@
     /* HERO */
     .hero {
       background:linear-gradient(135deg,var(--pr),var(--pd));
-      color:#fff; padding:14px 16px;
-      display:flex; justify-content:space-between; align-items:flex-start;
+      color:#fff; padding:10px 16px;
+      text-align:center;
     }
-    /* FIX 2.1: Swapped font sizes — title bigger, MAC smaller */
-    .hero-title { font-size:16px; font-weight:700; margin-bottom:4px; }
-    .hero-mac   { font-size:11px; opacity:.85; letter-spacing:.3px; }
-    .hero-r     { text-align:right; font-size:12px; line-height:1.8; }
-    .hero-r strong { font-weight:600; }
-    .conn-dot {
-      display:inline-block; width:8px; height:8px;
-      border-radius:50%; background:#ff5252; margin-left:6px;
-      vertical-align:middle; transition:background .5s;
-    }
-    .conn-dot.online { background:#69f0ae; }
+    .hero-title { font-size:16px; font-weight:700; margin-bottom:3px; }
+    .hero-mac   { font-size:11px; opacity:.85; letter-spacing:.3px; margin-bottom:5px; }
+    .hero-info  { display:flex; justify-content:space-between; font-size:12px; }
+    .hero-info strong { font-weight:600; }
 
     /* BROKER STATUS BAR */
     .broker-bar {
-      background:#fff; padding:6px 16px;
+      background:#fff; padding:4px 16px;
       display:flex; align-items:center; gap:8px;
       border-bottom:1px solid #e8e8e8; font-size:11px;
     }
@@ -67,26 +60,20 @@
     /* GAUGE */
     .gauge-row {
       display:flex; align-items:center; justify-content:center;
-      padding:12px 16px 4px;
+      padding:6px 16px 2px;
     }
-    .gauge-cont { position:relative; width:150px; height:95px; }
+    .gauge-cont { position:relative; width:170px; height:143px; }
     .gauge-cont svg { width:100%; height:100%; }
-    .gauge-txt {
-      position:absolute; bottom:4px; left:50%;
-      transform:translateX(-50%); text-align:center; line-height:1.1;
-    }
-    .gauge-val { font-size:36px; font-weight:700; color:var(--pr); }
-    .gauge-lbl { font-size:11px; color:var(--t2); }
 
     /* MOS */
-    .mos-row { display:flex; gap:10px; padding:6px 16px 8px; }
+    .mos-row { display:flex; gap:10px; padding:4px 16px 5px; }
     .mos-card {
-      flex:1; background:var(--card); padding:9px 12px;
+      flex:1; background:var(--card); padding:7px 12px;
       border-radius:10px; box-shadow:var(--sh);
       text-align:center; border:2px solid transparent; transition:all .3s;
     }
     .mos-card.on { border-color:var(--pr); background:rgba(0,188,212,.06); }
-    .mos-lbl { font-size:11px; color:var(--t2); margin-bottom:5px; }
+    .mos-lbl { font-size:11px; color:var(--t2); margin-bottom:4px; }
     .mos-st  { display:inline-flex; align-items:center; gap:6px; font-weight:600; font-size:13px; }
     .mos-dot { width:10px; height:10px; border-radius:50%; background:#ccc; transition:all .3s; }
     .mos-card.on .mos-dot { background:var(--pr); box-shadow:0 0 6px var(--pr); }
@@ -94,25 +81,25 @@
     /* METRICS */
     .metrics {
       display:grid; grid-template-columns:repeat(4,1fr);
-      gap:7px; padding:0 16px 8px;
+      gap:5px; padding:0 16px 5px;
     }
-    .mc { background:var(--card); padding:8px 4px; border-radius:10px; box-shadow:var(--sh); text-align:center; }
-    .mc-ico { font-size:16px; margin-bottom:3px; }
-    .mc-val { font-size:13px; font-weight:700; margin-bottom:1px; }
+    .mc { background:var(--card); padding:6px 4px; border-radius:10px; box-shadow:var(--sh); text-align:center; }
+    .mc-ico { font-size:14px; margin-bottom:2px; }
+    .mc-val { font-size:12px; font-weight:700; margin-bottom:1px; }
     .mc-lbl { font-size:10px; color:var(--t2); }
 
     /* DIVIDER */
     .div {
       display:flex; align-items:center; gap:10px;
-      padding:5px 16px; color:var(--t2); font-size:11px; font-weight:500;
+      padding:3px 16px; color:var(--t2); font-size:11px; font-weight:500;
     }
     .div::before,.div::after { content:''; flex:1; height:1px; background:#ddd; }
 
     /* STATUS */
     .status-box {
-      background:var(--card); margin:0 16px 8px;
+      background:var(--card); margin:0 16px 5px;
       border-radius:10px; box-shadow:var(--sh);
-      padding:8px 16px; text-align:center;
+      padding:6px 16px; text-align:center;
       font-weight:500; font-size:13px;
     }
     .status-box.normal { color:var(--pr); }
@@ -122,9 +109,9 @@
     /* TEMP single-line */
     .temp-bar {
       display:flex; align-items:center;
-      background:var(--card); margin:0 16px 8px;
+      background:var(--card); margin:0 16px 5px;
       border-radius:10px; box-shadow:var(--sh);
-      padding:10px 14px; gap:0;
+      padding:7px 14px; gap:0;
     }
     .temp-unit { display:flex; align-items:center; gap:6px; flex-shrink:0; padding-right:12px; border-right:1px solid #e0e0e0; }
     .temp-unit-lbl { font-size:11px; color:var(--t2); }
@@ -136,23 +123,23 @@
     .tr-val { font-size:13px; font-weight:700; color:var(--t1); white-space:nowrap; }
 
     /* CELLS */
-    .cells-wrap { padding:0 16px 12px; }
-    .cells-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:7px; margin-top:8px; }
+    .cells-wrap { padding:0 16px 6px; }
+    .cells-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:5px; margin-top:5px; }
     .cell-item {
       background:var(--card); border-radius:10px; box-shadow:var(--sh);
-      padding:5px 4px 4px; display:flex; flex-direction:column;
+      padding:4px 4px 3px; display:flex; flex-direction:column;
       align-items:center; gap:2px; border:2px solid transparent;
       position:relative;
     }
     .cell-lbl  { font-size:10px; color:var(--t2); font-weight:500; }
 
-    /* LFP absolute threshold colours */
+    /* Cell rank colours: highest=green, lowest=red, middle=grey */
     .cell-item.h  { background:#edfaed; border-color:#97C459; }
-    .cell-item.w  { background:#fff8e8; border-color:#EF9F27; }
     .cell-item.cr { background:#ffeaea; border-color:#F09595; }
+    .cell-item.md { background:#f5f5f5; border-color:#bbb; }
 
     /* FOOTER */
-    .footer { text-align:center; font-size:10px; color:var(--t2); padding:4px 0 10px; }
+    .footer { text-align:center; font-size:10px; color:var(--t2); padding:2px 0 6px; }
 
     @media (min-width:600px) {
       body { max-width:480px; margin:0 auto; box-shadow:0 0 20px rgba(0,0,0,.08); min-height:100vh; }
@@ -161,16 +148,14 @@
 </head>
 <body>
 
-<!-- HERO: title bigger, MAC smaller (FIX 2.1) -->
+<!-- HERO -->
 <div class="hero">
-  <div>
-    <div class="hero-title">⚡ Sarvada Battery Monitor</div>
-    <div class="hero-mac">A5:C2:3A:2A:A8:D6 <span class="conn-dot" id="connDot"></span></div>
-  </div>
-  <div class="hero-r">
-    BattType: <strong>LFP</strong><br>
-    BattSwitch: <strong id="battSwitch">--</strong><br>
-    HeatState: <strong>OFF</strong>
+  <div class="hero-title">⚡ Sarvada Battery Monitor</div>
+  <div class="hero-mac">A5:C2:3A:2A:A8:D6</div>
+  <div class="hero-info">
+    <span>BattType: <strong>LFP</strong></span>
+    <span>BattSwitch: <strong id="battSwitch">--</strong></span>
+    <span>HeatState: <strong>OFF</strong></span>
   </div>
 </div>
 
@@ -185,33 +170,27 @@
 <!-- STALE DATA WARNING (Q6) -->
 <div class="stale-banner" id="staleBanner">⚠️ No data received from ESP32 for <span id="staleSeconds">0</span>s — device may be offline</div>
 
-<!-- GAUGE: fixed arc + tick label positions (FIX 2.2) -->
+<!-- GAUGE: speedometer style -->
 <div class="gauge-row">
   <div class="gauge-cont">
-    <svg viewBox="0 0 150 95">
-      <defs>
-        <linearGradient id="gg" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stop-color="#00bcd4"/>
-          <stop offset="100%" stop-color="#0097a7"/>
-        </linearGradient>
-      </defs>
-      <!-- Background arc -->
-      <path d="M15 80 A60 60 0 0 1 135 80" stroke="#e0e0e0" stroke-width="7" fill="none" stroke-linecap="round"/>
-      <!-- Progress arc -->
-      <path id="garc" d="M15 80 A60 60 0 0 1 135 80" stroke="url(#gg)" stroke-width="7" fill="none" stroke-linecap="round" stroke-dasharray="0 188"/>
-      <!-- Tick labels: moved inward so they don't sit on the arc -->
-      <g font-size="8" fill="#00bcd4" text-anchor="middle">
-        <text x="8"   y="68">0</text>
-        <text x="30"  y="24">25</text>
-        <text x="75"  y="10">50</text>
-        <text x="120" y="24">75</text>
-        <text x="142" y="68">100</text>
+    <svg id="gaugeSvg" viewBox="0 0 220 185">
+      <!-- Background -->
+      <circle cx="110" cy="95" r="86" fill="#00bcd4"/>
+      <!-- Full outer ring -->
+      <circle cx="110" cy="95" r="91" fill="none" stroke="white" stroke-width="6"/>
+      <!-- Ticks + numbers injected by buildGauge() -->
+      <!-- Needle -->
+      <g id="needleGroup" transform="rotate(-135,110,95)">
+        <line x1="110" y1="110" x2="110" y2="30" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
       </g>
+      <!-- Hub -->
+      <circle cx="110" cy="95" r="7" fill="white"/>
+      <circle cx="110" cy="95" r="3" fill="#00bcd4"/>
+      <!-- Labels -->
+      <text x="110" y="58" text-anchor="middle" font-size="10" font-weight="700" fill="white" font-family="-apple-system,BlinkMacSystemFont,sans-serif" letter-spacing="1">SOC</text>
+      <text id="socVal" x="103" y="148" text-anchor="middle" font-size="40" font-weight="700" fill="white" font-family="-apple-system,BlinkMacSystemFont,sans-serif">--</text>
+      <text x="131" y="148" font-size="13" font-weight="600" fill="white" font-family="-apple-system,BlinkMacSystemFont,sans-serif">%</text>
     </svg>
-    <div class="gauge-txt">
-      <div class="gauge-val" id="socVal">--</div>
-      <div class="gauge-lbl">SOC %</div>
-    </div>
   </div>
 </div>
 
@@ -306,28 +285,66 @@
     return { text: errors.join(' · '), level: level };
   }
 
-  // ── CELL COLOUR: relative to pack average (original calculation) ─────────
-  // All balanced (max-min ≤ 0.05V) → all green
-  // Cell > 0.05V below average     → orange (warning)
-  // Cell > 0.10V below average     → red (critical)
-  function cellCls(v, avg, diff) {
-    if (diff <= 0.05) return 'h';
-    if (v < avg - 0.10) return 'cr';
-    if (v < avg - 0.05) return 'w';
-    return 'h';
+  // ── CELL COLOUR: green=highest, red=lowest, grey=middle ──────────────────
+  function cellCls(v, minV, maxV) {
+    if (v === maxV) return 'h';
+    if (v === minV) return 'cr';
+    return 'md';
   }
 
   // ── GAUGE ─────────────────────────────────────────────────────────────────
   function drawGauge(soc) {
-    var f = 188 * (Math.max(0, Math.min(100, soc)) / 100);
-    document.getElementById('garc').setAttribute('stroke-dasharray', f.toFixed(1) + ' 188');
+    var angle = -135 + (Math.max(0, Math.min(100, soc)) / 100) * 270;
+    document.getElementById('needleGroup').setAttribute('transform',
+      'rotate(' + angle.toFixed(1) + ',110,95)');
   }
 
-  // ── HORIZONTAL BATTERY SVG with voltage text inside (FIX 2.5) ────────────
+  // ── BUILD GAUGE TICKS (runs once on load) ─────────────────────────────────
+  function buildGauge() {
+    var svg = document.getElementById('gaugeSvg');
+    var cx = 110, cy = 95;
+    var NS = 'http://www.w3.org/2000/svg';
+    function pt(r, theta) {
+      var rad = theta * Math.PI / 180;
+      return { x: cx + r * Math.sin(rad), y: cy - r * Math.cos(rad) };
+    }
+    function mkLine(p1, p2, sw, op) {
+      var el = document.createElementNS(NS, 'line');
+      el.setAttribute('x1', p1.x.toFixed(1)); el.setAttribute('y1', p1.y.toFixed(1));
+      el.setAttribute('x2', p2.x.toFixed(1)); el.setAttribute('y2', p2.y.toFixed(1));
+      el.setAttribute('stroke', 'white'); el.setAttribute('stroke-width', sw);
+      if (op) el.setAttribute('opacity', op);
+      return el;
+    }
+    function mkTxt(p, label) {
+      var el = document.createElementNS(NS, 'text');
+      el.setAttribute('x', p.x.toFixed(1)); el.setAttribute('y', p.y.toFixed(1));
+      el.setAttribute('text-anchor', 'middle'); el.setAttribute('dominant-baseline', 'middle');
+      el.setAttribute('font-size', '8'); el.setAttribute('font-weight', '700');
+      el.setAttribute('fill', 'white');
+      el.setAttribute('font-family', '-apple-system,BlinkMacSystemFont,sans-serif');
+      el.textContent = label;
+      return el;
+    }
+    var needle = document.getElementById('needleGroup');
+    var labels = ['0','10','20','30','40','50','60','70','80','90','100'];
+    for (var k = 0; k <= 50; k++) {
+      if (k % 5 === 0) continue;
+      var theta = -135 + k * 5.4;
+      svg.insertBefore(mkLine(pt(83, theta), pt(78, theta), '1', '0.7'), needle);
+    }
+    for (var i = 0; i <= 10; i++) {
+      var theta = -135 + i * 27;
+      svg.insertBefore(mkLine(pt(83, theta), pt(71, theta), '2'), needle);
+      svg.insertBefore(mkTxt(pt(58, theta), labels[i]), needle);
+    }
+  }
+
+  // ── HORIZONTAL BATTERY SVG with voltage text inside ───────────────────────
   function battSVG(cls, pct, voltText) {
     var W=44, H=18, tip=3;
-    var fc  = {h:'#4caf50', w:'#ffa726', cr:'#ef5350'}[cls] || '#4caf50';
-    var tc  = {h:'#1a4a0a', w:'#5a3000', cr:'#6a0a0a'}[cls] || '#1a4a0a';
+    var fc  = {h:'#4caf50', cr:'#ef5350', md:'#9e9e9e'}[cls] || '#9e9e9e';
+    var tc  = {h:'#1a4a0a', cr:'#6a0a0a', md:'#333333'}[cls] || '#333333';
     var fw  = Math.max(0, Math.round((W-4)*pct/100));
     return '<svg width="'+(W+tip+4)+'" height="'+(H+4)+'" viewBox="0 0 '+(W+tip+4)+' '+(H+4)+'">'
       + '<rect x="2" y="2" width="'+W+'" height="'+H+'" rx="3" fill="#e8e8e8" stroke="#bbb" stroke-width="1.5"/>'
@@ -348,7 +365,7 @@
     var g = document.getElementById('cgrid');
     g.innerHTML = '';
     cells.forEach(function(v,i) {
-      var cls = cellCls(v, avg, diff);
+      var cls = cellCls(v, mn, mx);
       var pct = Math.max(0, Math.min(100, Math.round(((v-3.0)/(3.65-3.0))*100)));
       var el  = document.createElement('div');
       el.className = 'cell-item ' + cls;
@@ -400,10 +417,12 @@
     lastTemps = { mos:d.T3, t1:d.T1, t2:d.T2 };
     renderTemps();
 
-    // MOS state (FIX 2.3)
-    setMos('chgCard','chgVal', d.ChgMos === 1);
-    setMos('disCard','disVal', d.DisMos === 1);
-    setText('battSwitch', (d.ChgMos || d.DisMos) ? 'ON' : 'OFF');
+    // MOS gate state from OpStatus bitmask: bit0=ChgMOS, bit1=DisMOS
+    var chgOn = (d.OpStatus & 1) !== 0;
+    var disOn = (d.OpStatus & 2) !== 0;
+    setMos('chgCard','chgVal', chgOn);
+    setMos('disCard','disVal', disOn);
+    setText('battSwitch', (chgOn || disOn) ? 'ON' : 'OFF');
 
     // Battery Status decoded from bitmask (FIX 2.4)
     var errResult = decodeErrors(d.ErrBitmask || 0);
@@ -416,7 +435,6 @@
     lastMessageTime = Date.now();
     document.body.classList.remove('stale');
     document.getElementById('staleBanner').classList.remove('show');
-    document.getElementById('connDot').className = 'conn-dot online';
     setText('footer', 'Live via MQTT · ' + new Date().toLocaleTimeString());
   }
 
@@ -460,7 +478,6 @@
     });
 
     client.on('close', function() {
-      document.getElementById('connDot').className = 'conn-dot';
       setBrokerStatus('offline');
       setText('footer', 'MQTT disconnected — reconnecting in 5s');
     });
@@ -481,11 +498,11 @@
       var banner = document.getElementById('staleBanner');
       banner.classList.add('show');
       document.getElementById('staleSeconds').textContent = age;
-      document.getElementById('connDot').className = 'conn-dot';
       setText('footer', 'Last data: ' + age + 's ago — ESP32 may be offline');
     }
   }, 1000);
 
+  buildGauge();
   connectMQTT();
 </script>
 </body>
