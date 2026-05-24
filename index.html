@@ -114,7 +114,7 @@
       padding:7px 14px; gap:0;
     }
     .temp-unit { display:flex; align-items:center; gap:6px; flex-shrink:0; padding-right:12px; border-right:1px solid #e0e0e0; }
-    .temp-unit-lbl { font-size:11px; color:var(--t2); }
+    .temp-unit-lbl { font-size:11px; color:var(--t2); font-weight:700; }
     .temp-btn { background:none; border:1px solid var(--pr); color:var(--pr); cursor:pointer; font-weight:600; font-size:10px; padding:2px 7px; border-radius:4px; line-height:1.4; }
     .temp-readings { display:flex; flex:1; }
     .tr { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:0 8px; border-right:1px solid #e0e0e0; }
@@ -138,6 +138,45 @@
     .cell-item.cr { background:#ffeaea; border-color:#F09595; }
     .cell-item.md { background:#f5f5f5; border-color:#bbb; }
 
+    /* TOOLTIP */
+    .tip { cursor:help; position:relative; user-select:none; }
+    .tip::after {
+      content:attr(data-tip);
+      position:absolute; bottom:calc(100% + 7px); left:50%;
+      transform:translateX(-50%);
+      background:#222; color:#fff;
+      padding:8px 10px; border-radius:8px;
+      font-size:11px; line-height:1.5; font-weight:400;
+      width:190px; white-space:normal;
+      opacity:0; pointer-events:none;
+      transition:opacity 0.18s; z-index:999;
+      box-shadow:0 3px 10px rgba(0,0,0,0.35); text-align:left;
+    }
+    .tip::before {
+      content:''; position:absolute; bottom:calc(100% + 2px); left:50%;
+      transform:translateX(-50%);
+      border:5px solid transparent; border-top-color:#222;
+      opacity:0; pointer-events:none; transition:opacity 0.18s; z-index:999;
+    }
+    /* Hero tooltips open downward — avoids going off top of screen */
+    .hero .tip::after  { bottom:auto; top:calc(100% + 7px); }
+    .hero .tip::before { bottom:auto; top:calc(100% + 2px); border-top-color:transparent; border-bottom-color:#222; }
+    /* Edge columns: left-align or right-align to prevent viewport clipping */
+    .hero-info .tip:first-child::after,
+    .metrics .mc:nth-child(4n+1) .tip::after,
+    .cells-grid .cell-item:nth-child(4n+1)::after  { left:0; transform:none; }
+    .hero-info .tip:first-child::before,
+    .metrics .mc:nth-child(4n+1) .tip::before,
+    .cells-grid .cell-item:nth-child(4n+1)::before { left:15px; transform:none; }
+    .hero-info .tip:last-child::after,
+    .metrics .mc:nth-child(4n) .tip::after,
+    .cells-grid .cell-item:nth-child(4n)::after    { right:0; left:auto; transform:none; }
+    .hero-info .tip:last-child::before,
+    .metrics .mc:nth-child(4n) .tip::before,
+    .cells-grid .cell-item:nth-child(4n)::before   { right:15px; left:auto; transform:none; }
+    .tip:hover::after,.tip:hover::before,
+    .tip.open::after,.tip.open::before { opacity:1; }
+
     /* FOOTER */
     .footer { text-align:center; font-size:10px; color:var(--t2); padding:2px 0 6px; }
 
@@ -153,9 +192,9 @@
   <div class="hero-title">⚡ Sarvada Battery Monitor</div>
   <div class="hero-mac">A5:C2:3A:2A:A8:D6</div>
   <div class="hero-info">
-    <span>BattType: <strong>LFP</strong></span>
-    <span>BattSwitch: <strong id="battSwitch">--</strong></span>
-    <span>HeatState: <strong>OFF</strong></span>
+    <span class="tip" data-tip="Lithium Iron Phosphate — safe, long-life chemistry used in solar & UPS applications. Rated 2000–6000 cycles.">BattType: <strong>LFP</strong></span>
+    <span class="tip" data-tip="ON if charge or discharge circuit is active. OFF means battery is fully isolated by the BMS.">BattSwitch: <strong id="battSwitch">--</strong></span>
+    <span class="tip" data-tip="Battery heater status. Activates in cold conditions to warm cells before charging is allowed.">HeatState: <strong>OFF</strong></span>
   </div>
 </div>
 
@@ -187,9 +226,8 @@
       <circle cx="110" cy="95" r="7" fill="white"/>
       <circle cx="110" cy="95" r="3" fill="#00bcd4"/>
       <!-- Labels -->
-      <text x="110" y="58" text-anchor="middle" font-size="10" font-weight="700" fill="white" font-family="-apple-system,BlinkMacSystemFont,sans-serif" letter-spacing="1">SOC</text>
-      <text id="socVal" x="103" y="148" text-anchor="middle" font-size="40" font-weight="700" fill="white" font-family="-apple-system,BlinkMacSystemFont,sans-serif">--</text>
-      <text x="131" y="148" font-size="13" font-weight="600" fill="white" font-family="-apple-system,BlinkMacSystemFont,sans-serif">%</text>
+      <text x="110" y="68" text-anchor="middle" font-size="15" font-weight="700" fill="white" font-family="-apple-system,BlinkMacSystemFont,sans-serif" letter-spacing="2">SOC</text>
+      <text id="socVal" x="110" y="163" text-anchor="middle" font-size="25" font-weight="700" fill="white" font-family="-apple-system,BlinkMacSystemFont,sans-serif">--</text>
     </svg>
   </div>
 </div>
@@ -197,29 +235,29 @@
 <!-- MOS (FIX 2.3: confirmed wired through globals → MQTT → HTML) -->
 <div class="mos-row">
   <div class="mos-card" id="chgCard">
-    <div class="mos-lbl">Charge MOS</div>
+    <div class="mos-lbl tip" data-tip="Charge MOSFET — electronic switch that allows current into the battery. ON = BMS permits charging. Turns OFF at full charge or over-temperature.">Charge MOS</div>
     <div class="mos-st"><span class="mos-dot"></span><span id="chgVal">--</span></div>
   </div>
   <div class="mos-card" id="disCard">
-    <div class="mos-lbl">Discharge MOS</div>
+    <div class="mos-lbl tip" data-tip="Discharge MOSFET — electronic switch that allows current to your loads. ON = BMS permits discharging. Turns OFF on over-current or low voltage.">Discharge MOS</div>
     <div class="mos-st"><span class="mos-dot"></span><span id="disVal">--</span></div>
   </div>
 </div>
 
 <!-- METRICS -->
 <div class="metrics">
-  <div class="mc"><div class="mc-ico">🔌</div><div class="mc-val" id="mVolt">--</div><div class="mc-lbl">Total Volt</div></div>
-  <div class="mc"><div class="mc-ico">⚡</div><div class="mc-val" id="mCurr">--</div><div class="mc-lbl">Current</div></div>
-  <div class="mc"><div class="mc-ico">⚙️</div><div class="mc-val" id="mPow">--</div><div class="mc-lbl">Power</div></div>
-  <div class="mc"><div class="mc-ico">♻️</div><div class="mc-val" id="mCyc">--</div><div class="mc-lbl">Cycles</div></div>
-  <div class="mc"><div class="mc-ico">⬆️</div><div class="mc-val" id="mHi">--</div><div class="mc-lbl">High Volt</div></div>
-  <div class="mc"><div class="mc-ico">⬇️</div><div class="mc-val" id="mLo">--</div><div class="mc-lbl">Low Volt</div></div>
-  <div class="mc"><div class="mc-ico">〰️</div><div class="mc-val" id="mAvg">--</div><div class="mc-lbl">Ave Volt</div></div>
-  <div class="mc"><div class="mc-ico">📊</div><div class="mc-val" id="mDif">--</div><div class="mc-lbl">Diff Volt</div></div>
+  <div class="mc"><div class="mc-ico">🔌</div><div class="mc-val" id="mVolt">--</div><div class="mc-lbl tip" data-tip="Total pack voltage — sum of all 8 cells in series. Full charge ~29.2V, cutoff ~24V.">Total Volt</div></div>
+  <div class="mc"><div class="mc-ico">⚡</div><div class="mc-val" id="mCurr">--</div><div class="mc-lbl tip" data-tip="Positive = charging current flowing in. Negative = discharge current flowing to load.">Current</div></div>
+  <div class="mc"><div class="mc-ico">⚙️</div><div class="mc-val" id="mPow">--</div><div class="mc-lbl tip" data-tip="Instantaneous power in Watts (Voltage × Current). Positive = charging, Negative = load.">Power</div></div>
+  <div class="mc"><div class="mc-ico">♻️</div><div class="mc-val" id="mCyc">--</div><div class="mc-lbl tip" data-tip="Full charge/discharge cycles completed. LFP cells are rated for 2000–6000 cycles.">Cycles</div></div>
+  <div class="mc"><div class="mc-ico">⬆️</div><div class="mc-val" id="mHi">--</div><div class="mc-lbl tip" data-tip="Highest voltage among all 8 cells right now. Shown as green cell in the grid below.">High Volt</div></div>
+  <div class="mc"><div class="mc-ico">⬇️</div><div class="mc-val" id="mLo">--</div><div class="mc-lbl tip" data-tip="Lowest voltage among all 8 cells right now. Shown as red cell in the grid below.">Low Volt</div></div>
+  <div class="mc"><div class="mc-ico">〰️</div><div class="mc-val" id="mAvg">--</div><div class="mc-lbl tip" data-tip="Average cell voltage across all 8 cells.">Ave Volt</div></div>
+  <div class="mc"><div class="mc-ico">📊</div><div class="mc-val" id="mDif">--</div><div class="mc-lbl tip" data-tip="Gap between highest and lowest cell. Below 0.05V = healthy. Above 0.1V = imbalance. Above 0.2V = cell problem.">Diff Volt</div></div>
 </div>
 
 <!-- BATTERY STATUS (FIX 2.4: decoded from ErrBitmask) -->
-<div class="div">Battery Status</div>
+<div class="div"><span class="tip" data-tip="Hardware protection events from the BMS chip. Decoded from the error bitmask register. Also shows custom threshold alerts.">Battery Status</span></div>
 <div class="status-box normal" id="statusBox">
   <span id="statusTxt">Waiting for data...</span>
 </div>
@@ -232,9 +270,9 @@
     <button class="temp-btn" id="tBtn">°C ⇄ °F</button>
   </div>
   <div class="temp-readings">
-    <div class="tr"><div class="tr-lbl">MOS</div><div class="tr-val" id="tMos">--</div></div>
-    <div class="tr"><div class="tr-lbl">T1</div><div class="tr-val"  id="tT1">--</div></div>
-    <div class="tr"><div class="tr-lbl">T2</div><div class="tr-val"  id="tT2">--</div></div>
+    <div class="tr"><div class="tr-lbl tip" data-tip="MOSFET board temperature — the main heat source during high current charge or discharge.">MOS</div><div class="tr-val" id="tMos">--</div></div>
+    <div class="tr"><div class="tr-lbl tip" data-tip="Cell temperature sensor 1 — monitors battery cell pack temperature.">T1</div><div class="tr-val"  id="tT1">--</div></div>
+    <div class="tr"><div class="tr-lbl tip" data-tip="Cell temperature sensor 2 — secondary temperature monitoring point on the pack.">T2</div><div class="tr-val"  id="tT2">--</div></div>
   </div>
 </div>
 
@@ -283,6 +321,31 @@
     }
     var level = (bitmask & 0b11111100) ? 'error' : 'warning';
     return { text: errors.join(' · '), level: level };
+  }
+
+  // ── CUSTOM THRESHOLDS (edit values to suit your pack) ────────────────────
+  // Rules are checked top-to-bottom; first match per category wins.
+  var THRESHOLDS = [
+    { check: function(d){ return d.SOC < 10; },                              msg: 'Critical SOC — charge immediately',  level: 'error'   },
+    { check: function(d){ return d.SOC < 25; },                              msg: 'Low SOC — consider charging',        level: 'warning' },
+    { check: function(d){ return d.DeltaCell > 0.15; },                      msg: 'Severe cell imbalance',              level: 'error'   },
+    { check: function(d){ return d.DeltaCell > 0.08; },                      msg: 'Cell imbalance detected',            level: 'warning' },
+    { check: function(d){ return Math.max(d.T1,d.T2,d.T3) > 55; },          msg: 'High temperature — check pack',      level: 'error'   },
+    { check: function(d){ return Math.max(d.T1,d.T2,d.T3) > 45; },          msg: 'Elevated temperature',               level: 'warning' },
+    { check: function(d){ return d.Volt > 29.2; },                           msg: 'Pack over-voltage',                  level: 'error'   },
+    { check: function(d){ return d.Volt < 24.0 && d.Volt > 0; },            msg: 'Pack under-voltage',                 level: 'error'   },
+  ];
+
+  function checkThresholds(d) {
+    var msgs = [], level = 'normal';
+    THRESHOLDS.forEach(function(t) {
+      if (t.check(d)) {
+        msgs.push(t.msg);
+        if (t.level === 'error') level = 'error';
+        else if (t.level === 'warning' && level !== 'error') level = 'warning';
+      }
+    });
+    return { text: msgs.join(' · '), level: level };
   }
 
   // ── CELL COLOUR: green=highest, red=lowest, grey=middle ──────────────────
@@ -364,11 +427,17 @@
     var diff = mx - mn;
     var g = document.getElementById('cgrid');
     g.innerHTML = '';
+    var CELL_TIPS = {
+      h:  'Highest voltage cell — charged the most. The BMS balancer will draw current from this cell first.',
+      cr: 'Lowest voltage cell — most discharged. If this lags far behind, the BMS may trigger under-voltage protection.',
+      md: 'Mid-range cell — voltage sits between the highest and lowest in the pack.'
+    };
     cells.forEach(function(v,i) {
       var cls = cellCls(v, mn, mx);
-      var pct = Math.max(0, Math.min(100, Math.round(((v-3.0)/(3.65-3.0))*100)));
+      var pct = Math.max(0, Math.min(100, Math.round(d.SOC)));
       var el  = document.createElement('div');
-      el.className = 'cell-item ' + cls;
+      el.className = 'cell-item ' + cls + ' tip';
+      el.setAttribute('data-tip', CELL_TIPS[cls]);
       el.innerHTML = '<div class="cell-lbl">Cell '+(i+1)+'</div>'
                    + battSVG(cls, pct, v.toFixed(3));
       g.appendChild(el);
@@ -404,7 +473,7 @@
   // ── RENDER DATA ────────────────────────────────────────────────────────────
   function renderData(d) {
     drawGauge(d.SOC);
-    setText('socVal', Math.round(d.SOC));
+    document.getElementById('socVal').innerHTML = Math.round(d.SOC) + '<tspan font-size="11" dy="-8">%</tspan>';
     setText('mVolt',  parseFloat(d.Volt).toFixed(2)      + 'V');
     setText('mCurr',  parseFloat(d.Amp).toFixed(1)       + 'A');
     setText('mPow',   parseFloat(d.Watt).toFixed(1)      + 'W');
@@ -424,11 +493,18 @@
     setMos('disCard','disVal', disOn);
     setText('battSwitch', (chgOn || disOn) ? 'ON' : 'OFF');
 
-    // Battery Status decoded from bitmask (FIX 2.4)
-    var errResult = decodeErrors(d.ErrBitmask || 0);
+    // Battery Status: hardware faults + custom thresholds combined
+    var hwResult = decodeErrors(d.ErrBitmask || 0);
+    var swResult = checkThresholds(d);
+    var combinedLevel = (hwResult.level === 'error'   || swResult.level === 'error')   ? 'error'
+                      : (hwResult.level === 'warning' || swResult.level === 'warning') ? 'warning'
+                      : 'normal';
+    var parts = [];
+    if (hwResult.level !== 'normal') parts.push(hwResult.text);
+    if (swResult.text) parts.push(swResult.text);
     var box = document.getElementById('statusBox');
-    box.className = 'status-box ' + errResult.level;
-    setText('statusTxt', errResult.text);
+    box.className = 'status-box ' + combinedLevel;
+    setText('statusTxt', parts.length ? parts.join(' · ') : 'Normal operation');
 
     drawCells(d);
 
@@ -501,6 +577,14 @@
       setText('footer', 'Last data: ' + age + 's ago — ESP32 may be offline');
     }
   }, 1000);
+
+  // ── TOOLTIP TAP SUPPORT (mobile) — event delegation covers dynamic cells ──
+  document.addEventListener('click', function(e) {
+    var tip = e.target.closest ? e.target.closest('.tip') : null;
+    var wasOpen = tip && tip.classList.contains('open');
+    document.querySelectorAll('.tip.open').forEach(function(t){ t.classList.remove('open'); });
+    if (tip && !wasOpen) tip.classList.add('open');
+  });
 
   buildGauge();
   connectMQTT();
