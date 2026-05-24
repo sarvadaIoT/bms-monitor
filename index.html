@@ -44,6 +44,9 @@
     .broker-dot.connecting { background:#ffa726; }
     .broker-label { color:var(--t2); }
     .broker-status { font-weight:600; color:var(--t1); }
+    .broker-sync-grp { margin-left:auto; display:flex; align-items:center; gap:5px; color:var(--t2); }
+    .broker-refresh { background:none; border:none; cursor:pointer; font-size:15px; color:var(--t2); padding:0 2px; line-height:1; transition:color .2s; }
+    .broker-refresh:hover,.broker-refresh:active { color:var(--pr); }
     /* stale data overlay */
     .stale-banner {
       display:none; background:#fff3cd; border:1px solid #ffc107;
@@ -66,17 +69,15 @@
     .gauge-cont svg { width:100%; height:100%; }
 
     /* MOS */
-    .mos-row { display:flex; gap:10px; padding:4px 16px 5px; }
-    .mos-card {
-      flex:1; background:var(--card); padding:7px 12px;
-      border-radius:10px; box-shadow:var(--sh);
-      text-align:center; border:2px solid transparent; transition:all .3s;
-    }
-    .mos-card.on { border-color:var(--pr); background:rgba(0,188,212,.06); }
-    .mos-lbl { font-size:11px; color:var(--t2); margin-bottom:4px; }
-    .mos-st  { display:inline-flex; align-items:center; gap:6px; font-weight:600; font-size:13px; }
-    .mos-dot { width:10px; height:10px; border-radius:50%; background:#ccc; transition:all .3s; }
-    .mos-card.on .mos-dot { background:var(--pr); box-shadow:0 0 6px var(--pr); }
+    .mos-compact { display:flex; background:var(--card); margin:0 16px 5px; border-radius:10px; box-shadow:var(--sh); padding:8px 14px; }
+    .mos-side { flex:1; display:flex; align-items:center; gap:8px; padding:0 10px; transition:all .3s; }
+    .mos-side:first-child { border-right:1px solid #e0e0e0; padding-left:0; }
+    .mos-side:last-child  { padding-right:0; }
+    .mos-lbl  { font-size:11px; color:var(--t2); }
+    .mos-dot  { width:10px; height:10px; border-radius:50%; background:#ccc; flex-shrink:0; transition:all .3s; }
+    .mos-val  { font-size:13px; font-weight:700; margin-left:auto; }
+    .mos-side.on .mos-dot { background:var(--pr); box-shadow:0 0 6px var(--pr); }
+    .mos-side.on .mos-val { color:var(--pr); }
 
     /* METRICS */
     .metrics {
@@ -163,16 +164,16 @@
     .hero .tip::before { bottom:auto; top:calc(100% + 2px); border-top-color:transparent; border-bottom-color:#222; }
     /* Edge columns: left-align or right-align to prevent viewport clipping */
     .hero-info .tip:first-child::after,
-    .metrics .mc:nth-child(4n+1) .tip::after,
+    .metrics .mc.tip:nth-child(4n+1)::after,
     .cells-grid .cell-item:nth-child(4n+1)::after  { left:0; transform:none; }
     .hero-info .tip:first-child::before,
-    .metrics .mc:nth-child(4n+1) .tip::before,
+    .metrics .mc.tip:nth-child(4n+1)::before,
     .cells-grid .cell-item:nth-child(4n+1)::before { left:15px; transform:none; }
     .hero-info .tip:last-child::after,
-    .metrics .mc:nth-child(4n) .tip::after,
+    .metrics .mc.tip:nth-child(4n)::after,
     .cells-grid .cell-item:nth-child(4n)::after    { right:0; left:auto; transform:none; }
     .hero-info .tip:last-child::before,
-    .metrics .mc:nth-child(4n) .tip::before,
+    .metrics .mc.tip:nth-child(4n)::before,
     .cells-grid .cell-item:nth-child(4n)::before   { right:15px; left:auto; transform:none; }
     .tip:hover::after,.tip:hover::before,
     .tip.open::after,.tip.open::before { opacity:1; }
@@ -203,7 +204,10 @@
   <div class="broker-dot" id="brokerDot"></div>
   <span class="broker-label">Broker:</span>
   <span class="broker-status" id="brokerStatus">Connecting...</span>
-
+  <span class="broker-sync-grp">
+    <span id="brokerSync">Last Sync: --</span>
+    <button class="broker-refresh" id="refreshBtn" title="Refresh page">↻</button>
+  </span>
 </div>
 
 <!-- STALE DATA WARNING (Q6) -->
@@ -227,33 +231,36 @@
       <circle cx="110" cy="95" r="3" fill="#00bcd4"/>
       <!-- Labels -->
       <text x="110" y="68" text-anchor="middle" font-size="15" font-weight="700" fill="white" font-family="-apple-system,BlinkMacSystemFont,sans-serif" letter-spacing="2">SOC</text>
-      <text id="socVal" x="110" y="163" text-anchor="middle" font-size="25" font-weight="700" fill="white" font-family="-apple-system,BlinkMacSystemFont,sans-serif">--</text>
+      <text id="socVal" x="106" y="163" text-anchor="middle" font-size="25" font-weight="700" fill="white" font-family="-apple-system,BlinkMacSystemFont,sans-serif">--</text>
+      <text x="130" y="155" font-size="12" font-weight="600" fill="white" font-family="-apple-system,BlinkMacSystemFont,sans-serif">%</text>
     </svg>
   </div>
 </div>
 
-<!-- MOS (FIX 2.3: confirmed wired through globals → MQTT → HTML) -->
-<div class="mos-row">
-  <div class="mos-card" id="chgCard">
-    <div class="mos-lbl tip" data-tip="Charge MOSFET — electronic switch that allows current into the battery. ON = BMS permits charging. Turns OFF at full charge or over-temperature.">Charge MOS</div>
-    <div class="mos-st"><span class="mos-dot"></span><span id="chgVal">--</span></div>
+<!-- MOS -->
+<div class="mos-compact">
+  <div class="mos-side tip" id="chgCard" data-tip="Charge MOSFET — electronic switch that allows current into the battery. ON = BMS permits charging. Turns OFF at full charge or over-temperature.">
+    <span class="mos-dot"></span>
+    <span class="mos-lbl">Charge MOS</span>
+    <span class="mos-val" id="chgVal">--</span>
   </div>
-  <div class="mos-card" id="disCard">
-    <div class="mos-lbl tip" data-tip="Discharge MOSFET — electronic switch that allows current to your loads. ON = BMS permits discharging. Turns OFF on over-current or low voltage.">Discharge MOS</div>
-    <div class="mos-st"><span class="mos-dot"></span><span id="disVal">--</span></div>
+  <div class="mos-side tip" id="disCard" data-tip="Discharge MOSFET — electronic switch that allows current to your loads. ON = BMS permits discharging. Turns OFF on over-current or low voltage.">
+    <span class="mos-dot"></span>
+    <span class="mos-lbl">Discharge MOS</span>
+    <span class="mos-val" id="disVal">--</span>
   </div>
 </div>
 
 <!-- METRICS -->
 <div class="metrics">
-  <div class="mc"><div class="mc-ico">🔌</div><div class="mc-val" id="mVolt">--</div><div class="mc-lbl tip" data-tip="Total pack voltage — sum of all 8 cells in series. Full charge ~29.2V, cutoff ~24V.">Total Volt</div></div>
-  <div class="mc"><div class="mc-ico">⚡</div><div class="mc-val" id="mCurr">--</div><div class="mc-lbl tip" data-tip="Positive = charging current flowing in. Negative = discharge current flowing to load.">Current</div></div>
-  <div class="mc"><div class="mc-ico">⚙️</div><div class="mc-val" id="mPow">--</div><div class="mc-lbl tip" data-tip="Instantaneous power in Watts (Voltage × Current). Positive = charging, Negative = load.">Power</div></div>
-  <div class="mc"><div class="mc-ico">♻️</div><div class="mc-val" id="mCyc">--</div><div class="mc-lbl tip" data-tip="Full charge/discharge cycles completed. LFP cells are rated for 2000–6000 cycles.">Cycles</div></div>
-  <div class="mc"><div class="mc-ico">⬆️</div><div class="mc-val" id="mHi">--</div><div class="mc-lbl tip" data-tip="Highest voltage among all 8 cells right now. Shown as green cell in the grid below.">High Volt</div></div>
-  <div class="mc"><div class="mc-ico">⬇️</div><div class="mc-val" id="mLo">--</div><div class="mc-lbl tip" data-tip="Lowest voltage among all 8 cells right now. Shown as red cell in the grid below.">Low Volt</div></div>
-  <div class="mc"><div class="mc-ico">〰️</div><div class="mc-val" id="mAvg">--</div><div class="mc-lbl tip" data-tip="Average cell voltage across all 8 cells.">Ave Volt</div></div>
-  <div class="mc"><div class="mc-ico">📊</div><div class="mc-val" id="mDif">--</div><div class="mc-lbl tip" data-tip="Gap between highest and lowest cell. Below 0.05V = healthy. Above 0.1V = imbalance. Above 0.2V = cell problem.">Diff Volt</div></div>
+  <div class="mc tip" data-tip="Total pack voltage — sum of all 8 cells in series. Full charge ~29.2V, cutoff ~24V."><div class="mc-ico">🔌</div><div class="mc-val" id="mVolt">--</div><div class="mc-lbl">Total Volt</div></div>
+  <div class="mc tip" data-tip="Positive = charging current flowing in. Negative = discharge current flowing to load."><div class="mc-ico">⚡</div><div class="mc-val" id="mCurr">--</div><div class="mc-lbl">Current</div></div>
+  <div class="mc tip" data-tip="Instantaneous power in Watts (Voltage × Current). Positive = charging, Negative = load."><div class="mc-ico">⚙️</div><div class="mc-val" id="mPow">--</div><div class="mc-lbl">Power</div></div>
+  <div class="mc tip" data-tip="Full charge/discharge cycles completed. LFP cells are rated for 2000–6000 cycles."><div class="mc-ico">♻️</div><div class="mc-val" id="mCyc">--</div><div class="mc-lbl">Cycles</div></div>
+  <div class="mc tip" data-tip="Highest voltage among all 8 cells right now. Shown as green cell in the grid below."><div class="mc-ico">⬆️</div><div class="mc-val" id="mHi">--</div><div class="mc-lbl">High Volt</div></div>
+  <div class="mc tip" data-tip="Lowest voltage among all 8 cells right now. Shown as red cell in the grid below."><div class="mc-ico">⬇️</div><div class="mc-val" id="mLo">--</div><div class="mc-lbl">Low Volt</div></div>
+  <div class="mc tip" data-tip="Average cell voltage across all 8 cells."><div class="mc-ico">〰️</div><div class="mc-val" id="mAvg">--</div><div class="mc-lbl">Ave Volt</div></div>
+  <div class="mc tip" data-tip="Gap between highest and lowest cell. Below 0.05V = healthy. Above 0.1V = imbalance. Above 0.2V = cell problem."><div class="mc-ico">📊</div><div class="mc-val" id="mDif">--</div><div class="mc-lbl">Diff Volt</div></div>
 </div>
 
 <!-- BATTERY STATUS (FIX 2.4: decoded from ErrBitmask) -->
@@ -270,9 +277,9 @@
     <button class="temp-btn" id="tBtn">°C ⇄ °F</button>
   </div>
   <div class="temp-readings">
-    <div class="tr"><div class="tr-lbl tip" data-tip="MOSFET board temperature — the main heat source during high current charge or discharge.">MOS</div><div class="tr-val" id="tMos">--</div></div>
-    <div class="tr"><div class="tr-lbl tip" data-tip="Cell temperature sensor 1 — monitors battery cell pack temperature.">T1</div><div class="tr-val"  id="tT1">--</div></div>
-    <div class="tr"><div class="tr-lbl tip" data-tip="Cell temperature sensor 2 — secondary temperature monitoring point on the pack.">T2</div><div class="tr-val"  id="tT2">--</div></div>
+    <div class="tr tip" data-tip="MOSFET board temperature — the main heat source during high current charge or discharge."><div class="tr-lbl">MOS</div><div class="tr-val" id="tMos">--</div></div>
+    <div class="tr tip" data-tip="Cell temperature sensor 1 — monitors battery cell pack temperature."><div class="tr-lbl">T1</div><div class="tr-val"  id="tT1">--</div></div>
+    <div class="tr tip" data-tip="Cell temperature sensor 2 — secondary temperature monitoring point on the pack."><div class="tr-lbl">T2</div><div class="tr-val"  id="tT2">--</div></div>
   </div>
 </div>
 
@@ -473,7 +480,7 @@
   // ── RENDER DATA ────────────────────────────────────────────────────────────
   function renderData(d) {
     drawGauge(d.SOC);
-    document.getElementById('socVal').innerHTML = Math.round(d.SOC) + '<tspan font-size="11" dy="-8">%</tspan>';
+    setText('socVal', Math.round(d.SOC));
     setText('mVolt',  parseFloat(d.Volt).toFixed(2)      + 'V');
     setText('mCurr',  parseFloat(d.Amp).toFixed(1)       + 'A');
     setText('mPow',   parseFloat(d.Watt).toFixed(1)      + 'W');
@@ -509,6 +516,7 @@
     drawCells(d);
 
     lastMessageTime = Date.now();
+    document.getElementById('brokerSync').textContent = 'Last Sync: ' + new Date().toLocaleTimeString();
     document.body.classList.remove('stale');
     document.getElementById('staleBanner').classList.remove('show');
     setText('footer', 'Live via MQTT · ' + new Date().toLocaleTimeString());
@@ -585,6 +593,8 @@
     document.querySelectorAll('.tip.open').forEach(function(t){ t.classList.remove('open'); });
     if (tip && !wasOpen) tip.classList.add('open');
   });
+
+  document.getElementById('refreshBtn').addEventListener('click', function() { location.reload(); });
 
   buildGauge();
   connectMQTT();
