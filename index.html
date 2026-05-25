@@ -179,7 +179,17 @@
     .tip.open::after,.tip.open::before { opacity:1; }
 
     /* FOOTER */
-    .footer { text-align:center; font-size:10px; color:var(--t2); padding:2px 0 6px; }
+    .footer-bar {
+      display:flex; justify-content:center; align-items:center;
+      font-size:10px; color:var(--t2); padding:4px 16px 8px;
+    }
+    .footer-bar.live { justify-content:space-between; }
+    .footer-center { font-weight:600; }
+    .footer-side {
+      width:36%; text-align:center; white-space:nowrap;
+      overflow:hidden; display:none;
+    }
+    .footer-bar.live .footer-side { display:block; }
 
     @media (min-width:600px) {
       body { max-width:480px; margin:0 auto; box-shadow:0 0 20px rgba(0,0,0,.08); min-height:100vh; }
@@ -289,7 +299,17 @@
   <div class="cells-grid" id="cgrid"></div>
 </div>
 
-<div class="footer" id="footer">Connecting to broker...</div>
+<div class="footer-bar" id="footerBar">
+  <div class="footer-side">
+    <span id="fBootLabel">Last Boot</span>
+    <span id="fBootVal" style="display:none">--</span>
+  </div>
+  <span class="footer-center" id="footerCenter">Connecting to broker...</span>
+  <div class="footer-side">
+    <span id="fSyncLabel">Last Sheet Sync</span>
+    <span id="fSyncVal" style="display:none">--</span>
+  </div>
+</div>
 
 <script>
   // ── CONFIG ────────────────────────────────────────────────────────────────
@@ -301,6 +321,20 @@
   var isCelsius      = true;
   var lastTemps      = { mos:null, t1:null, t2:null };
   var lastMessageTime = null;
+  var _footerFlipActive = false;
+
+  function startFooterFlip() {
+    if (_footerFlipActive) return;
+    _footerFlipActive = true;
+    var showLabel = true;
+    setInterval(function() {
+      showLabel = !showLabel;
+      document.getElementById('fBootLabel').style.display = showLabel ? '' : 'none';
+      document.getElementById('fBootVal').style.display   = showLabel ? 'none' : '';
+      document.getElementById('fSyncLabel').style.display = showLabel ? '' : 'none';
+      document.getElementById('fSyncVal').style.display   = showLabel ? 'none' : '';
+    }, 4000);
+  }
 
   // ── JBD ERROR BITMASK TABLE (FIX 2.4) ─────────────────────────────────────
   // Source: Jiabaida communication protocol PDF
@@ -519,7 +553,15 @@
     document.getElementById('brokerSync').textContent = 'Last Sync: ' + new Date().toLocaleTimeString();
     document.body.classList.remove('stale');
     document.getElementById('staleBanner').classList.remove('show');
-    setText('footer', 'Live via MQTT · ' + new Date().toLocaleTimeString());
+
+    // Footer — go live on first data
+    var fc = document.getElementById('footerCenter');
+    fc.textContent = '● Live via MQTT';
+    fc.style.color = '#4caf50';
+    document.getElementById('footerBar').classList.add('live');
+    if (d.BootTime) document.getElementById('fBootVal').textContent = d.BootTime;
+    document.getElementById('fSyncVal').textContent = d.LastSync || 'pending';
+    startFooterFlip();
   }
 
   // ── BROKER STATUS (FIX Q3) ────────────────────────────────────────────────
@@ -550,7 +592,6 @@
 
     client.on('connect', function() {
       setBrokerStatus('ok');
-      setText('footer', 'MQTT connected · waiting for ESP32 data...');
       client.subscribe(MQTT_TOPIC);
     });
 
@@ -563,7 +604,10 @@
 
     client.on('close', function() {
       setBrokerStatus('offline');
-      setText('footer', 'MQTT disconnected — reconnecting in 5s');
+      var fc = document.getElementById('footerCenter');
+      fc.textContent = 'Connecting to broker...';
+      fc.style.color = '';
+      document.getElementById('footerBar').classList.remove('live');
     });
 
     client.on('error', function(err) {
@@ -582,7 +626,6 @@
       var banner = document.getElementById('staleBanner');
       banner.classList.add('show');
       document.getElementById('staleSeconds').textContent = age;
-      setText('footer', 'Last data: ' + age + 's ago — ESP32 may be offline');
     }
   }, 1000);
 
