@@ -215,7 +215,7 @@
   <span class="broker-label">Broker:</span>
   <span class="broker-status" id="brokerStatus">Connecting...</span>
   <span class="broker-sync-grp">
-    <span id="brokerSync">Last Sync: --</span>
+    <span id="brokerSync">Sync : --</span>
     <button class="broker-refresh" id="refreshBtn" title="Refresh page">↻</button>
   </span>
 </div>
@@ -550,7 +550,7 @@
     drawCells(d);
 
     lastMessageTime = Date.now();
-    document.getElementById('brokerSync').textContent = 'Last Sync: ' + new Date().toLocaleTimeString();
+    document.getElementById('brokerSync').textContent = 'Sync : ' + new Date().toLocaleTimeString();
     document.body.classList.remove('stale');
     document.getElementById('staleBanner').classList.remove('show');
 
