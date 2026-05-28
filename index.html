@@ -196,20 +196,6 @@
       display:flex; align-items:center; justify-content:center; padding:0;
     }
     .info-btn.active { background:rgba(0,188,212,0.12); border-color:var(--pd); }
-    .info-btn::after {
-      content:attr(data-tip);
-      position:absolute; right:calc(100% + 8px); top:50%; transform:translateY(-50%);
-      background:#222; color:#fff; padding:5px 8px; border-radius:6px;
-      font-size:10px; white-space:nowrap; font-weight:400;
-      opacity:0; pointer-events:none; transition:opacity 0.18s; z-index:20;
-      box-shadow:0 2px 6px rgba(0,0,0,0.3);
-    }
-    .info-btn::before {
-      content:''; position:absolute; right:calc(100% + 3px); top:50%; transform:translateY(-50%);
-      border:5px solid transparent; border-left-color:#222;
-      opacity:0; pointer-events:none; transition:opacity 0.18s; z-index:20;
-    }
-    .info-btn:hover::after,.info-btn:hover::before { opacity:1; }
     .info-panel {
       position:absolute; right:0; top:0; bottom:0;
       width:0; overflow:hidden; transition:width .3s cubic-bezier(.4,0,.2,1);
@@ -281,7 +267,7 @@
       <text x="130" y="155" font-size="12" font-weight="600" fill="white" font-family="-apple-system,BlinkMacSystemFont,sans-serif">%</text>
     </svg>
   </div>
-  <button class="info-btn" id="infoBtn" style="display:none" data-tip="Device log">⏱</button>
+  <button class="info-btn" id="infoBtn" style="display:none">⏱</button>
   <div class="info-panel" id="infoPanel">
     <div class="ip-row"><span class="ip-lbl">Last Power Cut</span><span class="ip-val" id="fCutVal">--</span></div>
     <div class="ip-row"><span class="ip-lbl">Duration</span><span class="ip-val" id="fDurVal">--</span></div>
