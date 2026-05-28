@@ -45,8 +45,6 @@
     .broker-label { color:var(--t2); }
     .broker-status { font-weight:600; color:var(--t1); }
     .broker-sync-grp { margin-left:auto; display:flex; align-items:center; gap:5px; color:var(--t2); }
-    .broker-refresh { background:none; border:none; cursor:pointer; font-size:15px; color:var(--t2); padding:0 2px; line-height:1; transition:color .2s; }
-    .broker-refresh:hover,.broker-refresh:active { color:var(--pr); }
     /* stale data overlay */
     .stale-banner {
       display:none; background:#fff3cd; border:1px solid #ffc107;
@@ -63,7 +61,7 @@
     /* GAUGE */
     .gauge-row {
       display:flex; align-items:center; justify-content:center;
-      padding:6px 16px 2px;
+      padding:6px 16px 2px; position:relative; overflow:hidden;
     }
     .gauge-cont { position:relative; width:170px; height:143px; }
     .gauge-cont svg { width:100%; height:100%; }
@@ -180,24 +178,55 @@
     .tip:hover::after,.tip:hover::before,
     .tip.open::after,.tip.open::before { opacity:1; }
 
+    /* INFO PANEL (gauge row slide-in) */
+    .info-btn {
+      position:absolute; right:12px; top:50%; transform:translateY(-50%);
+      background:rgba(255,255,255,0.92); border:1.5px solid var(--pr);
+      color:var(--pr); border-radius:50%; width:30px; height:30px;
+      font-size:16px; cursor:pointer; z-index:10; transition:all .2s;
+      display:flex; align-items:center; justify-content:center; padding:0;
+    }
+    .info-btn.active { background:rgba(0,188,212,0.12); border-color:var(--pd); }
+    /* SIDE DRAWER */
+    .info-btn {
+      position:absolute; right:12px; top:50%; transform:translateY(-50%);
+      background:rgba(255,255,255,0.92); border:1.5px solid var(--pr);
+      color:var(--pr); border-radius:50%; width:30px; height:30px;
+      font-size:16px; cursor:pointer; z-index:10; transition:all .2s;
+      display:flex; align-items:center; justify-content:center; padding:0;
+    }
+    .info-btn.active { background:rgba(0,188,212,0.12); border-color:var(--pd); }
+    .info-btn::after {
+      content:attr(data-tip);
+      position:absolute; right:calc(100% + 8px); top:50%; transform:translateY(-50%);
+      background:#222; color:#fff; padding:5px 8px; border-radius:6px;
+      font-size:10px; white-space:nowrap; font-weight:400;
+      opacity:0; pointer-events:none; transition:opacity 0.18s; z-index:20;
+      box-shadow:0 2px 6px rgba(0,0,0,0.3);
+    }
+    .info-btn::before {
+      content:''; position:absolute; right:calc(100% + 3px); top:50%; transform:translateY(-50%);
+      border:5px solid transparent; border-left-color:#222;
+      opacity:0; pointer-events:none; transition:opacity 0.18s; z-index:20;
+    }
+    .info-btn:hover::after,.info-btn:hover::before { opacity:1; }
+    .info-panel {
+      position:absolute; right:0; top:0; bottom:0;
+      width:0; overflow:hidden; transition:width .3s cubic-bezier(.4,0,.2,1);
+      background:rgba(255,255,255,0.97); z-index:5;
+      display:flex; flex-direction:column; justify-content:center;
+    }
+    .info-panel.open { width:155px; padding:6px 10px; box-shadow:-3px 0 10px rgba(0,0,0,0.12); border-radius:10px 0 0 10px; }
+    .ip-row { padding:3px 0; }
+    .ip-lbl { font-size:9px; color:var(--t2); display:block; }
+    .ip-val { font-size:11px; font-weight:600; color:var(--t1); display:block; white-space:nowrap; }
+
     /* FOOTER */
     .footer-bar {
       display:flex; justify-content:center; align-items:center;
       font-size:10px; color:var(--t2); padding:4px 16px 8px;
-      cursor:pointer;
     }
     .footer-center { font-weight:600; }
-    .footer-chevron { margin-left:6px; transition:transform .3s; display:inline-block; font-size:18px; line-height:1; }
-    .footer-chevron.open { transform:rotate(180deg); }
-    .footer-detail {
-      max-height:0; overflow:hidden; transition:max-height .35s ease;
-      font-size:10px; color:var(--t2); padding:0 16px;
-    }
-    .footer-detail.open { max-height:90px; padding-bottom:10px; }
-    .fd-row { display:flex; gap:12px; padding:3px 0; }
-    .fd-cell { flex:1; min-width:0; display:flex; flex-direction:column; gap:1px; }
-    .fd-lbl { color:var(--t2); }
-    .fd-val { color:var(--t1); font-weight:600; }
 
     @media (min-width:600px) {
       body { max-width:480px; margin:0 auto; box-shadow:0 0 20px rgba(0,0,0,.08); min-height:100vh; }
@@ -224,7 +253,6 @@
   <span class="broker-status" id="brokerStatus">Connecting...</span>
   <span class="broker-sync-grp">
     <span id="brokerSync">Sync: --</span>
-    <button class="broker-refresh" id="refreshBtn" title="Refresh page">↻</button>
   </span>
 </div>
 
@@ -252,6 +280,13 @@
       <text id="socVal" x="106" y="163" text-anchor="middle" font-size="25" font-weight="700" fill="white" font-family="-apple-system,BlinkMacSystemFont,sans-serif">--</text>
       <text x="130" y="155" font-size="12" font-weight="600" fill="white" font-family="-apple-system,BlinkMacSystemFont,sans-serif">%</text>
     </svg>
+  </div>
+  <button class="info-btn" id="infoBtn" style="display:none" data-tip="Device log">⏱</button>
+  <div class="info-panel" id="infoPanel">
+    <div class="ip-row"><span class="ip-lbl">Last Power Cut</span><span class="ip-val" id="fCutVal">--</span></div>
+    <div class="ip-row"><span class="ip-lbl">Duration</span><span class="ip-val" id="fDurVal">--</span></div>
+    <div class="ip-row"><span class="ip-lbl">Last Boot</span><span class="ip-val" id="fBootVal">--</span></div>
+    <div class="ip-row"><span class="ip-lbl">Last Sheet Sync</span><span class="ip-val" id="fSyncVal">--</span></div>
   </div>
 </div>
 
@@ -309,18 +344,8 @@
 
 <div class="footer-bar" id="footerBar">
   <span class="footer-center" id="footerCenter">Connecting to broker...</span>
-  <span class="footer-chevron" id="footerChevron" style="display:none">▾</span>
 </div>
-<div class="footer-detail" id="footerDetail">
-  <div class="fd-row">
-    <div class="fd-cell"><span class="fd-lbl">Last Boot</span><span class="fd-val" id="fBootVal">--</span></div>
-    <div class="fd-cell"><span class="fd-lbl">Last Sheet Sync</span><span class="fd-val" id="fSyncVal">--</span></div>
-  </div>
-  <div class="fd-row">
-    <div class="fd-cell"><span class="fd-lbl">Last Power Cut</span><span class="fd-val" id="fCutVal">--</span></div>
-    <div class="fd-cell"><span class="fd-lbl">Duration</span><span class="fd-val" id="fDurVal">--</span></div>
-  </div>
-</div>
+
 
 <script>
   // ── CONFIG ────────────────────────────────────────────────────────────────
@@ -332,7 +357,8 @@
   var isCelsius      = true;
   var lastTemps      = { mos:null, t1:null, t2:null };
   var lastMessageTime = null;
-  var _footerFlipActive = false;
+  var _infoOpen = false;
+  var _infoInit = false;
   var _wasOutage = false;
   var _restoreTimer = null;
 
@@ -358,14 +384,28 @@
   }
 
   function initFooterLive() {
-    if (_footerFlipActive) return;
-    _footerFlipActive = true;
-    document.getElementById('footerChevron').style.display = '';
-    document.getElementById('footerBar').addEventListener('click', function() {
-      var det = document.getElementById('footerDetail');
-      var chv = document.getElementById('footerChevron');
-      det.classList.toggle('open');
-      chv.classList.toggle('open');
+    if (_infoInit) return;
+    _infoInit = true;
+    var btn = document.getElementById('infoBtn');
+    btn.style.display = '';
+
+    function openDrawer() {
+      _infoOpen = true;
+      document.getElementById('infoPanel').classList.add('open');
+      btn.classList.add('active');
+    }
+    function closeDrawer() {
+      _infoOpen = false;
+      document.getElementById('infoPanel').classList.remove('open');
+      btn.classList.remove('active');
+    }
+
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      _infoOpen ? closeDrawer() : openDrawer();
+    });
+    document.addEventListener('click', function() {
+      if (_infoOpen) closeDrawer();
     });
   }
 
@@ -594,14 +634,14 @@
     if (d.BootTime) document.getElementById('fBootVal').textContent = fixAmPm(d.BootTime);
     document.getElementById('fSyncVal').textContent = fixAmPm(d.LastSync) || 'pending';
 
-    var cutVal = document.getElementById('fCutVal');
-    var durVal = document.getElementById('fDurVal');
-    var detail = document.getElementById('footerDetail');
-    var chv    = document.getElementById('footerChevron');
+    var cutVal   = document.getElementById('fCutVal');
+    var durVal   = document.getElementById('fDurVal');
+    var panel    = document.getElementById('infoPanel');
+    var btn      = document.getElementById('infoBtn');
     if (d.IsOutage) {
       cutVal.textContent = fixAmPm(d.OutageSince) || '--';
       durVal.textContent = formatMins(d.OutageMins);
-      if (!_wasOutage) { detail.classList.add('open'); chv.classList.add('open'); }
+      if (!_wasOutage) { _infoOpen = true; panel.classList.add('open'); btn.classList.add('active'); }
       if (_restoreTimer) { clearTimeout(_restoreTimer); _restoreTimer = null; }
       _wasOutage = true;
     } else {
@@ -609,7 +649,7 @@
         cutVal.textContent = fixAmPm(d.OutageSince) || '--';
         durVal.textContent = formatMins(d.OutageMins) + (d.OutageEnd ? ' · restored ' + fixAmPm(d.OutageEnd) : '');
         _restoreTimer = setTimeout(function() {
-          detail.classList.remove('open'); chv.classList.remove('open');
+          _infoOpen = false; panel.classList.remove('open'); btn.classList.remove('active');
         }, 5000);
         _wasOutage = false;
       } else if (d.OutageSince) {
@@ -692,8 +732,6 @@
     document.querySelectorAll('.tip.open').forEach(function(t){ t.classList.remove('open'); });
     if (tip && !wasOpen) tip.classList.add('open');
   });
-
-  document.getElementById('refreshBtn').addEventListener('click', function() { location.reload(); });
 
   buildGauge();
   connectMQTT();
