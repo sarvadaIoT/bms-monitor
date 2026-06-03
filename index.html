@@ -181,32 +181,29 @@
     .tip.open::after,.tip.open::before { opacity:1; }
 
     /* INFO PANEL (gauge row slide-in) */
-    .info-btn {
-      position:absolute; right:12px; top:50%; transform:translateY(-50%);
-      background:rgba(255,255,255,0.92); border:1.5px solid var(--pr);
-      color:var(--pr); border-radius:50%; width:30px; height:30px;
-      font-size:16px; cursor:pointer; z-index:10; transition:all .2s;
-      display:flex; align-items:center; justify-content:center; padding:0;
+    .info-wrap {
+      position:absolute; right:0; top:0; bottom:0;
+      display:flex; flex-direction:row; align-items:center;
+      pointer-events:none;
     }
-    .info-btn.active { background:rgba(0,188,212,0.12); border-color:var(--pd); }
-    /* SIDE DRAWER */
     .info-btn {
-      position:absolute; right:12px; top:50%; transform:translateY(-50%);
-      background:rgba(255,255,255,0.92); border:1.5px solid var(--pr);
-      color:var(--pr); border-radius:50%; width:30px; height:30px;
-      font-size:16px; cursor:pointer; z-index:10; transition:all .2s;
+      pointer-events:auto; flex-shrink:0;
+      background:rgba(255,255,255,0.95); border:1.5px solid var(--pr);
+      border-right:none; color:var(--pr);
+      border-radius:8px 0 0 8px;
+      width:24px; height:40px;
+      font-size:20px; font-weight:700; cursor:pointer; z-index:10; transition:all .2s;
       display:flex; align-items:center; justify-content:center; padding:0;
     }
     .info-btn.active { background:rgba(0,188,212,0.12); border-color:var(--pd); }
     .info-panel {
-      position:absolute; right:0; top:0; bottom:0;
-      width:0; overflow:hidden;
+      height:100%; width:0; overflow:hidden;
       transition:width .45s cubic-bezier(0.22,1,0.36,1), opacity .35s ease;
       background:rgba(255,255,255,0.97); z-index:5;
       display:flex; flex-direction:column; justify-content:center;
-      opacity:0;
+      opacity:0; pointer-events:none;
     }
-    .info-panel.open { width:155px; padding:6px 10px; opacity:1; box-shadow:-3px 0 10px rgba(0,0,0,0.12); border-radius:10px 0 0 10px; }
+    .info-panel.open { width:155px; padding:6px 10px; opacity:1; box-shadow:-3px 0 10px rgba(0,0,0,0.12); pointer-events:auto; }
     .ip-row { padding:3px 0; }
     .ip-lbl { font-size:9px; color:var(--t2); display:block; }
     .ip-val { font-size:11px; font-weight:600; color:var(--t1); display:block; white-space:nowrap; }
@@ -271,12 +268,14 @@
       <text x="130" y="155" font-size="12" font-weight="600" fill="white" font-family="-apple-system,BlinkMacSystemFont,sans-serif">%</text>
     </svg>
   </div>
-  <button class="info-btn" id="infoBtn" style="display:none">⏱</button>
-  <div class="info-panel" id="infoPanel">
-    <div class="ip-row"><span class="ip-lbl">Last Power Cut</span><span class="ip-val" id="fCutVal">--</span></div>
-    <div class="ip-row"><span class="ip-lbl">Duration</span><span class="ip-val" id="fDurVal">--</span></div>
-    <div class="ip-row"><span class="ip-lbl">Last Boot</span><span class="ip-val" id="fBootVal">--</span></div>
-    <div class="ip-row"><span class="ip-lbl">Last Sheet Sync</span><span class="ip-val" id="fSyncVal">--</span></div>
+  <div class="info-wrap">
+    <button class="info-btn" id="infoBtn" style="display:none"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M6 2v6l4 4-4 4v6h12v-6l-4-4 4-4V2H6zm10 14.5V20H8v-3.5l4-4 4 4zm-4-5l-4-4V4h8v3.5l-4 4z"/></svg></button>
+    <div class="info-panel" id="infoPanel">
+      <div class="ip-row"><span class="ip-lbl">Last Power Cut</span><span class="ip-val" id="fCutVal">--</span></div>
+      <div class="ip-row"><span class="ip-lbl">Duration</span><span class="ip-val" id="fDurVal">--</span></div>
+      <div class="ip-row"><span class="ip-lbl">Last Boot</span><span class="ip-val" id="fBootVal">--</span></div>
+      <div class="ip-row"><span class="ip-lbl">Last Sheet Sync</span><span class="ip-val" id="fSyncVal">--</span></div>
+    </div>
   </div>
 </div>
 
