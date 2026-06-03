@@ -639,7 +639,7 @@
     } else {
       if (_wasOutage) {
         cutVal.textContent = fixAmPm(d.OutageSince) || '--';
-        durVal.textContent = formatMins(d.OutageMins) + (d.OutageEnd ? ' · restored ' + fixAmPm(d.OutageEnd) : '');
+        durVal.textContent = formatMins(d.OutageMins) + (d.OutageEnd ? ' · End ' + fixAmPm(d.OutageEnd) : '');
         localStorage.setItem('bms_cut', cutVal.textContent);
         localStorage.setItem('bms_dur', durVal.textContent);
         _restoreTimer = setTimeout(function() {
@@ -648,7 +648,7 @@
         _wasOutage = false;
       } else if (d.OutageSince) {
         cutVal.textContent = fixAmPm(d.OutageSince);
-        durVal.textContent = formatMins(d.OutageMins) + (d.OutageEnd ? ' · restored ' + fixAmPm(d.OutageEnd) : '');
+        durVal.textContent = formatMins(d.OutageMins) + (d.OutageEnd ? ' · End ' + fixAmPm(d.OutageEnd) : '');
         localStorage.setItem('bms_cut', cutVal.textContent);
         localStorage.setItem('bms_dur', durVal.textContent);
       }
