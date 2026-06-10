@@ -192,7 +192,7 @@
       border-right:none; color:var(--pr);
       border-radius:8px 0 0 8px;
       width:24px; height:40px;
-      font-size:20px; font-weight:700; cursor:pointer; z-index:10; transition:all .2s;
+      cursor:pointer; z-index:10; transition:all .2s;
       display:flex; align-items:center; justify-content:center; padding:0;
     }
     .info-btn.active { background:rgba(0,188,212,0.12); border-color:var(--pd); }
@@ -273,6 +273,7 @@
     <div class="info-panel" id="infoPanel">
       <div class="ip-row"><span class="ip-lbl">Last Power Cut</span><span class="ip-val" id="fCutVal">--</span></div>
       <div class="ip-row"><span class="ip-lbl">Duration</span><span class="ip-val" id="fDurVal">--</span></div>
+      <div class="ip-row" id="fRtRow" style="display:none"><span class="ip-lbl">Est. Runtime</span><span class="ip-val" id="fRtVal">--</span></div>
       <div class="ip-row"><span class="ip-lbl">Last Boot</span><span class="ip-val" id="fBootVal">--</span></div>
       <div class="ip-row"><span class="ip-lbl">Last Sheet Sync</span><span class="ip-val" id="fSyncVal">--</span></div>
     </div>
@@ -370,6 +371,15 @@
     if (mins < 60) return mins + ' min';
     var h = Math.floor(mins / 60), m = mins % 60;
     return h + 'h' + (m > 0 ? ' ' + m + 'm' : '');
+  }
+
+  function formatRuntime(capRem, amp) {
+    var draw = Math.abs(amp);
+    if (draw < 0.2) return '--';
+    var h = capRem / draw;
+    var hrs = Math.floor(h), mins = Math.round((h - hrs) * 60);
+    if (hrs === 0) return mins + ' min';
+    return hrs + 'h' + (mins > 0 ? ' ' + mins + 'm' : '');
   }
 
   function initFooterLive() {
@@ -632,10 +642,13 @@
       durVal.textContent = formatMins(d.OutageMins);
       localStorage.setItem('bms_cut', cutVal.textContent);
       localStorage.setItem('bms_dur', durVal.textContent);
+      document.getElementById('fRtRow').style.display = '';
+      document.getElementById('fRtVal').textContent = formatRuntime(d.CapRem, d.Amp);
       if (!_wasOutage) { _infoOpen = true; panel.classList.add('open'); btn.classList.add('active'); }
       if (_restoreTimer) { clearTimeout(_restoreTimer); _restoreTimer = null; }
       _wasOutage = true;
     } else {
+      document.getElementById('fRtRow').style.display = 'none';
       if (_wasOutage) {
         cutVal.textContent = fixAmPm(d.OutageSince) || '--';
         durVal.textContent = formatMins(d.OutageMins) + (d.OutageEnd ? ' · End ' + fixAmPm(d.OutageEnd) : '');
