@@ -272,11 +272,17 @@
     const s = document.createElement("script");
     s.id = "_jsonp_script";
     s.src = `${APPS_SCRIPT_URL}?callback=handleData&token=${encodeURIComponent(SUBMIT_TOKEN)}&_=${Date.now()}`;
-    s.onerror = () => showStatus("Failed to load. Check the URL and connection.", true);
+    // Timeout fallback — JSONP gives no response if doGet isn't deployed
+    const timeout = setTimeout(() => showStatus("No response from Apps Script. Make sure doGet is deployed (Deploy → Manage → New version).", true), 10000);
+    window.handleData = function(resp) {
+      clearTimeout(timeout);
+      _originalHandleData(resp);
+    };
+    s.onerror = () => { clearTimeout(timeout); showStatus("Failed to load. Check the URL and connection.", true); };
     document.body.appendChild(s);
   }
 
-  window.handleData = function(resp) {
+  window._originalHandleData = function(resp) {
     if (resp.status !== "success") { showStatus("Error: " + resp.message, true); return; }
     allData = (resp.data || []).map(d => ({ ...d, _date: d.submittedAt ? new Date(d.submittedAt) : null }));
     document.getElementById("lastUpdated").textContent = "Updated " + now.toLocaleTimeString("en-IN", { hour:"2-digit", minute:"2-digit" });
