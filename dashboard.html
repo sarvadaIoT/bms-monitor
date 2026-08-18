@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DSR Dashboard — DBLPR</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --blue:#1a56db; --blue-d:#1e40af; --blue-bg:#eff6ff;
+      --green:#16a34a; --green-bg:#f0fdf4;
+      --orange:#d97706; --orange-bg:#fffbeb;
+      --purple:#7c3aed; --purple-bg:#f5f3ff;
+      --teal:#0891b2; --teal-bg:#ecfeff;
+      --red:#dc2626; --red-bg:#fff5f5;
+      --bg:#f1f5f9; --card:#ffffff; --border:#e2e8f0;
+      --text:#0f172a; --muted:#64748b; --radius:14px;
+      --shadow:0 1px 3px rgba(0,0,0,0.08),0 1px 2px rgba(0,0,0,0.05);
+      --shadow-md:0 4px 16px rgba(0,0,0,0.09);
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* STICKY HEADER */
+    .topbar { position: sticky; top: 0; z-index: 100; background: rgba(15,23,42,0.97); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.07); padding: 0 24px; }
+    .topbar-inner { max-width: 1280px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 58px; gap: 16px; }
+    .topbar-brand { display: flex; align-items: center; gap: 12px; }
+    .topbar-logo { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg,var(--blue),#60a5fa); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+    .topbar-title { font-size: 15px; font-weight: 800; color: #fff; letter-spacing: -0.3px; }
+    .topbar-sub { font-size: 11px; color: rgba(255,255,255,0.45); margin-top: 1px; }
+    .store-badge { padding: 4px 12px; border-radius: 99px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; color: #fff; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.18); }
+    .topbar-right { display: flex; align-items: center; gap: 10px; }
+    .updated-text { font-size: 11px; color: rgba(255,255,255,0.4); }
+    .btn-refresh { display: flex; align-items: center; gap: 5px; padding: 6px 14px; border-radius: 8px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.18); color: #fff; font-size: 12px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+    .btn-refresh:hover { background: rgba(255,255,255,0.2); }
+
+    /* PAGE */
+    .page { max-width: 1280px; margin: 0 auto; padding: 20px 20px 48px; }
+
+    /* FILTER BAR */
+    .filter-card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 20px; padding: 14px 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 20px; }
+    .filter-section { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .filter-section-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); padding-right: 10px; border-right: 1.5px solid var(--border); }
+    .filter-item { display: flex; flex-direction: column; gap: 3px; }
+    .filter-item-label { font-size: 10px; font-weight: 700; color: var(--muted); letter-spacing: 0.3px; }
+    .filter-select { padding: 6px 28px 6px 10px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 12px; font-weight: 600; color: var(--text); background: var(--bg); cursor: pointer; outline: none; appearance: none; min-width: 110px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 10 7'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2364748b' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 9px center; transition: border-color 0.15s, box-shadow 0.15s; }
+    .filter-select:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); }
+    .filter-sep { width: 1px; height: 32px; background: var(--border); }
+    .optional-badge { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--orange); background: var(--orange-bg); padding: 2px 7px; border-radius: 99px; }
+
+    /* CONFIG WARN */
+    .config-warn { background: #fef3c7; border-left: 4px solid var(--orange); border-radius: 10px; padding: 14px 18px; margin-bottom: 20px; font-size: 13px; color: #92400e; font-weight: 600; display: none; }
+
+    /* STATUS */
+    #statusBar { display: none; text-align: center; padding: 60px 20px; background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 20px; }
+    .spinner-ring { width: 44px; height: 44px; margin: 0 auto 16px; border: 3px solid var(--border); border-top-color: var(--blue); border-radius: 50%; animation: spin 0.75s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #statusMsg { font-size: 14px; color: var(--muted); font-weight: 500; }
+
+    /* SECTION HEADER */
+    .section-header { display: flex; align-items: center; gap: 8px; margin: 24px 0 12px; }
+    .section-header-line { flex: 1; height: 1px; background: var(--border); }
+    .section-header-text { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); white-space: nowrap; padding: 0 4px; }
+
+    /* KPI CARDS */
+    .kpi-grid { display: grid; grid-template-columns: repeat(6,1fr); gap: 12px; margin-bottom: 4px; }
+    @media (max-width: 960px) { .kpi-grid { grid-template-columns: repeat(3,1fr); } }
+    @media (max-width: 520px) { .kpi-grid { grid-template-columns: repeat(2,1fr); } }
+    .kpi-card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px 16px 14px; display: flex; flex-direction: column; gap: 8px; transition: box-shadow 0.2s, transform 0.15s; }
+    .kpi-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+    .kpi-top { display: flex; align-items: center; justify-content: space-between; }
+    .kpi-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 17px; }
+    .kpi-value { font-size: 28px; font-weight: 800; color: var(--text); line-height: 1; }
+    .kpi-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; }
+    .kpi-sub { font-size: 11px; color: var(--muted); }
+
+    /* CHARTS */
+    .charts-row { display: grid; gap: 14px; margin-bottom: 14px; }
+    .charts-row-2 { grid-template-columns: 1fr 1fr; }
+    .charts-row-3 { grid-template-columns: 2fr 1fr; }
+    .charts-row-full { grid-template-columns: 1fr; }
+    @media (max-width: 768px) { .charts-row-2, .charts-row-3 { grid-template-columns: 1fr; } }
+    .chart-card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px 20px 16px; display: flex; flex-direction: column; gap: 14px; }
+    .chart-head { display: flex; align-items: center; justify-content: space-between; }
+    .chart-title-wrap { display: flex; align-items: center; gap: 8px; }
+    .chart-icon { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+    .chart-title { font-size: 13px; font-weight: 700; color: var(--text); }
+    .chart-subtitle { font-size: 11px; color: var(--muted); margin-top: 1px; }
+    .chart-wrap { position: relative; flex: 1; }
+
+    /* TABLE */
+    .table-card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+    .table-head-bar { padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 8px; }
+    .table-head-left { display: flex; align-items: center; gap: 8px; }
+    .table-head-icon { width: 30px; height: 30px; border-radius: 8px; background: var(--blue-bg); display: flex; align-items: center; justify-content: center; font-size: 15px; }
+    .table-head-title { font-size: 13px; font-weight: 700; }
+    .table-count { font-size: 11px; font-weight: 700; color: var(--blue); background: var(--blue-bg); padding: 3px 10px; border-radius: 99px; }
+    .tbl-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    thead { position: sticky; top: 58px; z-index: 10; }
+    thead tr { background: #f8fafc; }
+    th { padding: 10px 14px; text-align: left; font-weight: 700; color: var(--muted); text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; white-space: nowrap; border-bottom: 1px solid var(--border); }
+    tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover td { background: #f8fafc; }
+    tbody tr:nth-child(even) td { background: #fafafa; }
+    tbody tr:nth-child(even):hover td { background: #f1f5f9; }
+    td { padding: 10px 14px; color: var(--text); white-space: nowrap; }
+    td.muted { color: var(--muted); }
+    .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 99px; font-size: 10px; font-weight: 700; }
+    .badge::before { content: ""; width: 5px; height: 5px; border-radius: 50%; }
+    .badge-green { background: #dcfce7; color: #15803d; }
+    .badge-green::before { background: #15803d; }
+    .badge-orange { background: #fef3c7; color: #b45309; }
+    .badge-orange::before { background: #b45309; }
+    .no-data { text-align: center; padding: 40px; color: var(--muted); font-size: 13px; }
+
+    /* FOOTER */
+    .page-footer { text-align: center; font-size: 11px; color: var(--muted); margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--border); }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-brand">
+      <div class="topbar-logo">📊</div>
+      <div>
+        <div class="topbar-title">DSR Dashboard</div>
+        <div class="topbar-sub">Doddabalapur · Daily Sales Analytics</div>
+      </div>
+    </div>
+    <span class="store-badge">DBLPR</span>
+    <div class="topbar-right">
+      <span class="updated-text" id="lastUpdated">Not loaded</span>
+      <button class="btn-refresh" onclick="loadData()">⟳ Refresh</button>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+  <div class="config-warn" id="configWarn">⚙️ Set <strong>APPS_SCRIPT_URL</strong> and <strong>SUBMIT_TOKEN</strong> in the script section to connect live data.</div>
+
+  <div class="filter-card">
+    <div class="filter-section">
+      <span class="filter-section-label">Period</span>
+      <div class="filter-item">
+        <div class="filter-item-label">Year</div>
+        <select class="filter-select" id="fYear" onchange="applyFilters()"></select>
+      </div>
+      <div class="filter-item">
+        <div class="filter-item-label">Month</div>
+        <select class="filter-select" id="fMonth" onchange="applyFilters()"></select>
+      </div>
+    </div>
+    <div class="filter-sep"></div>
+    <div class="filter-section">
+      <span class="filter-section-label">Drill Down</span>
+      <span class="optional-badge">Optional</span>
+      <div class="filter-item">
+        <div class="filter-item-label">Week</div>
+        <select class="filter-select" id="fWeek" onchange="applyFilters()">
+          <option value="">All Weeks</option>
+          <option value="1">Week 1 (1–7)</option>
+          <option value="2">Week 2 (8–14)</option>
+          <option value="3">Week 3 (15–21)</option>
+          <option value="4">Week 4 (22–28)</option>
+          <option value="5">Week 5 (29–31)</option>
+        </select>
+      </div>
+      <div class="filter-item">
+        <div class="filter-item-label">Sales Hero</div>
+        <select class="filter-select" id="fHero" onchange="applyFilters()">
+          <option value="">All Heroes</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div id="statusBar">
+    <div class="spinner-ring"></div>
+    <p id="statusMsg">Loading data…</p>
+  </div>
+
+  <div id="dashContent" style="display:none;">
+
+    <div class="section-header"><div class="section-header-line"></div><div class="section-header-text">Key Metrics</div><div class="section-header-line"></div></div>
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-top"><div class="kpi-icon" style="background:var(--blue-bg);">👥</div></div><div class="kpi-value" id="kTotalVisits">—</div><div class="kpi-label">Total Visits</div><div class="kpi-sub" id="kVisitSub">—</div></div>
+      <div class="kpi-card"><div class="kpi-top"><div class="kpi-icon" style="background:var(--green-bg);">✅</div></div><div class="kpi-value" id="kBilled" style="color:var(--green);">—</div><div class="kpi-label">Billed</div><div class="kpi-sub" id="kConvRate">—</div></div>
+      <div class="kpi-card"><div class="kpi-top"><div class="kpi-icon" style="background:var(--orange-bg);">⏳</div></div><div class="kpi-value" id="kPending" style="color:var(--orange);">—</div><div class="kpi-label">Pending</div><div class="kpi-sub" id="kPendingPct">—</div></div>
+      <div class="kpi-card"><div class="kpi-top"><div class="kpi-icon" style="background:var(--purple-bg);">💰</div></div><div class="kpi-value" id="kRevenue" style="color:var(--purple);">—</div><div class="kpi-label">Revenue</div><div class="kpi-sub" id="kRevSub">—</div></div>
+      <div class="kpi-card"><div class="kpi-top"><div class="kpi-icon" style="background:var(--teal-bg);">📋</div></div><div class="kpi-value" id="kAvgBill" style="color:var(--teal);">—</div><div class="kpi-label">Avg Bill Value</div><div class="kpi-sub">per billed visit</div></div>
+      <div class="kpi-card"><div class="kpi-top"><div class="kpi-icon" style="background:var(--red-bg);">📦</div></div><div class="kpi-value" id="kTotalQty" style="color:var(--red);">—</div><div class="kpi-label">Total Qty</div><div class="kpi-sub">units sold</div></div>
+    </div>
+
+    <div class="section-header"><div class="section-header-line"></div><div class="section-header-text">Trend Analysis</div><div class="section-header-line"></div></div>
+    <div class="charts-row charts-row-3">
+      <div class="chart-card"><div class="chart-head"><div class="chart-title-wrap"><div class="chart-icon" style="background:var(--blue-bg);">📅</div><div><div class="chart-title">Daily Visit Trend</div><div class="chart-subtitle">Visits &amp; revenue by day</div></div></div></div><div class="chart-wrap"><canvas id="chartDailyTrend" height="190"></canvas></div></div>
+      <div class="chart-card"><div class="chart-head"><div class="chart-title-wrap"><div class="chart-icon" style="background:var(--green-bg);">🔄</div><div><div class="chart-title">Conversion Split</div><div class="chart-subtitle">Billed vs Pending</div></div></div></div><div class="chart-wrap"><canvas id="chartConversion" height="190"></canvas></div></div>
+    </div>
+
+    <div class="section-header"><div class="section-header-line"></div><div class="section-header-text">Weekly Breakdown</div><div class="section-header-line"></div></div>
+    <div class="charts-row charts-row-full">
+      <div class="chart-card">
+        <div class="chart-head">
+          <div class="chart-title-wrap">
+            <div class="chart-icon" style="background:var(--orange-bg);">📆</div>
+            <div>
+              <div class="chart-title">Week-by-Week Performance</div>
+              <div class="chart-subtitle">Visits, billed &amp; revenue for each week of the selected month</div>
+            </div>
+          </div>
+        </div>
+        <div class="chart-wrap"><canvas id="chartWeekly" height="110"></canvas></div>
+      </div>
+    </div>
+
+    <div class="section-header"><div class="section-header-line"></div><div class="section-header-text">Category &amp; Source Breakdown</div><div class="section-header-line"></div></div>
+      <div class="chart-card"><div class="chart-head"><div class="chart-title-wrap"><div class="chart-icon" style="background:var(--blue-bg);">🛒</div><div><div class="chart-title">Top Categories</div><div class="chart-subtitle">Visits by product category</div></div></div></div><div class="chart-wrap"><canvas id="chartCategories" height="210"></canvas></div></div>
+      <div class="chart-card"><div class="chart-head"><div class="chart-title-wrap"><div class="chart-icon" style="background:var(--teal-bg);">📍</div><div><div class="chart-title">Walk-in Sources</div><div class="chart-subtitle">How customers found the store</div></div></div></div><div class="chart-wrap"><canvas id="chartSources" height="210"></canvas></div></div>
+    </div>
+
+    <div class="section-header"><div class="section-header-line"></div><div class="section-header-text">Sales Hero Performance</div><div class="section-header-line"></div></div>
+    <div class="charts-row charts-row-full">
+      <div class="chart-card"><div class="chart-head"><div class="chart-title-wrap"><div class="chart-icon" style="background:var(--purple-bg);">🏆</div><div><div class="chart-title">Hero Performance</div><div class="chart-subtitle">Visits (blue) &amp; revenue generated (green) per hero</div></div></div></div><div class="chart-wrap"><canvas id="chartHeroes" height="110"></canvas></div></div>
+    </div>
+
+    <div class="section-header"><div class="section-header-line"></div><div class="section-header-text">Zone &amp; Failure Analysis</div><div class="section-header-line"></div></div>
+    <div class="charts-row charts-row-2">
+      <div class="chart-card"><div class="chart-head"><div class="chart-title-wrap"><div class="chart-icon" style="background:var(--purple-bg);">🗺</div><div><div class="chart-title">Area Zones</div><div class="chart-subtitle">Visit distribution by zone</div></div></div></div><div class="chart-wrap"><canvas id="chartZones" height="190"></canvas></div></div>
+      <div class="chart-card"><div class="chart-head"><div class="chart-title-wrap"><div class="chart-icon" style="background:var(--red-bg);">⚠️</div><div><div class="chart-title">FC Reasons</div><div class="chart-subtitle">Why customers did not purchase</div></div></div></div><div class="chart-wrap"><canvas id="chartFCReasons" height="190"></canvas></div></div>
+    </div>
+
+    <div class="section-header"><div class="section-header-line"></div><div class="section-header-text">Recent Entries</div><div class="section-header-line"></div></div>
+    <div class="table-card">
+      <div class="table-head-bar">
+        <div class="table-head-left"><div class="table-head-icon">📋</div><span class="table-head-title">Latest Records</span></div>
+        <span class="table-count" id="tableCount">0 records</span>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Date</th><th>Sales Hero</th><th>Customer</th><th>City</th><th>Category</th><th>Item</th><th>Qty</th><th>Status</th><th>Bill Value</th></tr></thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="page-footer">DSR Dashboard · Store DBLPR · Doddabalapur · Auto-refreshes on filter change</div>
+</div>
+
+<script>
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyCXbr4-zqr-gnlPpD0PAHFjvDAUpk8F_qUV2pFhkN-xG34WO7tTW6DV-X600WVBZ0/exec";
+  const SUBMIT_TOKEN    = "dsp-dblpr-2026-xK9mQ";
+  const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  let allData = [], charts = {};
+  const now = new Date();
+
+  window.onload = () => {
+    if (APPS_SCRIPT_URL === "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE") {
+      document.getElementById("configWarn").style.display = "block";
+    } else { loadData(); }
+  };
+
+  function loadData() {
+    showStatus("Loading data…");
+    const old = document.getElementById("_jsonp_script");
+    if (old) old.remove();
+    const s = document.createElement("script");
+    s.id = "_jsonp_script";
+    s.src = `${APPS_SCRIPT_URL}?callback=handleData&token=${encodeURIComponent(SUBMIT_TOKEN)}&_=${Date.now()}`;
+    s.onerror = () => showStatus("Failed to load. Check the URL and connection.", true);
+    document.body.appendChild(s);
+  }
+
+  window.handleData = function(resp) {
+    if (resp.status !== "success") { showStatus("Error: " + resp.message, true); return; }
+    allData = (resp.data || []).map(d => ({ ...d, _date: d.submittedAt ? new Date(d.submittedAt) : null }));
+    document.getElementById("lastUpdated").textContent = "Updated " + now.toLocaleTimeString("en-IN", { hour:"2-digit", minute:"2-digit" });
+    populateFilters(); applyFilters(); hideStatus();
+  };
+
+  function showStatus(msg, isError) {
+    const bar = document.getElementById("statusBar");
+    bar.style.display = "block"; bar.style.background = isError ? "#fff5f5" : "";
+    document.getElementById("dashContent").style.display = "none";
+    document.getElementById("statusMsg").textContent = msg;
+    bar.querySelector(".spinner-ring").style.display = isError ? "none" : "block";
+  }
+  function hideStatus() { document.getElementById("statusBar").style.display = "none"; document.getElementById("dashContent").style.display = "block"; }
+
+  function populateFilters() {
+    const years = [...new Set(allData.map(d => d._date?.getFullYear()).filter(Boolean))].sort((a,b)=>b-a);
+    document.getElementById("fYear").innerHTML = years.map(y=>`<option value="${y}"${y===now.getFullYear()?" selected":""}>${y}</option>`).join("");
+    document.getElementById("fMonth").innerHTML = MONTHS.map((m,i)=>`<option value="${i}"${i===now.getMonth()?" selected":""}>${m}</option>`).join("");
+    const heroes = [...new Set(allData.map(d=>d.salesHero).filter(Boolean))].sort();
+    document.getElementById("fHero").innerHTML = `<option value="">All Heroes</option>` + heroes.map(h=>`<option value="${h}">${h}</option>`).join("");
+  }
+
+  function applyFilters() {
+    const year=parseInt(document.getElementById("fYear").value);
+    const month=parseInt(document.getElementById("fMonth").value);
+    const week=document.getElementById("fWeek").value;
+    const hero=document.getElementById("fHero").value;
+    const data = allData.filter(d => {
+      if (!d._date) return false;
+      if (d._date.getFullYear()!==year) return false;
+      if (d._date.getMonth()!==month) return false;
+      if (week && String(Math.ceil(d._date.getDate()/7))!==week) return false;
+      if (hero && d.salesHero!==hero) return false;
+      return true;
+    });
+    renderKPIs(data); renderCharts(data, month); renderTable(data);
+  }
+
+  function renderKPIs(data) {
+    const billed=data.filter(d=>d.convStatus==="Billed");
+    const pending=data.filter(d=>d.convStatus==="Pending");
+    const revenue=billed.reduce((s,d)=>s+(parseFloat(d.totalBillValue)||0),0);
+    const qty=data.reduce((s,d)=>s+(parseInt(d.qty)||0),0);
+    const convRate=data.length>0?((billed.length/data.length)*100).toFixed(1):"0.0";
+    document.getElementById("kTotalVisits").textContent=data.length;
+    document.getElementById("kVisitSub").textContent=`${billed.length} billed · ${pending.length} pending`;
+    document.getElementById("kBilled").textContent=billed.length;
+    document.getElementById("kConvRate").textContent=convRate+"% conversion rate";
+    document.getElementById("kPending").textContent=pending.length;
+    document.getElementById("kPendingPct").textContent=data.length>0?(100-parseFloat(convRate)).toFixed(1)+"% not converted":"—";
+    document.getElementById("kRevenue").textContent=fmt(revenue);
+    document.getElementById("kRevSub").textContent=billed.length>0?`from ${billed.length} sales`:"no sales yet";
+    document.getElementById("kAvgBill").textContent=billed.length>0?fmt(revenue/billed.length):"—";
+    document.getElementById("kTotalQty").textContent=qty;
+  }
+
+  function fmt(n) {
+    if(n>=100000) return "₹"+(n/100000).toFixed(1)+"L";
+    if(n>=1000) return "₹"+(n/1000).toFixed(1)+"K";
+    return "₹"+Math.round(n);
+  }
+
+  function destroyChart(id) { if(charts[id]){charts[id].destroy();delete charts[id];} }
+  function topN(arr,key,n) { const m={}; arr.forEach(d=>{const k=d[key]||"Unknown";m[k]=(m[k]||0)+1;}); return Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,n); }
+
+  function renderCharts(data, month) {
+    const billed=data.filter(d=>d.convStatus==="Billed");
+    const pending=data.filter(d=>d.convStatus==="Pending");
+    const gridColor="#f1f5f9", tickColor="#94a3b8", bodyColor="#374151";
+
+    destroyChart("dailyTrend");
+    const days=new Date(parseInt(document.getElementById("fYear").value),month+1,0).getDate();
+    const dc=Array(days).fill(0), dr=Array(days).fill(0);
+    data.forEach(d=>{if(d._date)dc[d._date.getDate()-1]++;});
+    billed.forEach(d=>{if(d._date)dr[d._date.getDate()-1]+=parseFloat(d.totalBillValue)||0;});
+    charts.dailyTrend=new Chart(document.getElementById("chartDailyTrend"),{type:"bar",data:{labels:Array.from({length:days},(_,i)=>i+1),datasets:[{label:"Visits",data:dc,backgroundColor:"rgba(26,86,219,0.65)",borderRadius:4,yAxisID:"y"},{label:"Revenue",data:dr,type:"line",borderColor:"#16a34a",backgroundColor:"rgba(22,163,74,0.07)",tension:0.35,pointRadius:2,pointHoverRadius:4,yAxisID:"y1"}]},options:{responsive:true,interaction:{mode:"index"},plugins:{legend:{position:"top",labels:{font:{size:11},usePointStyle:true,padding:12}}},scales:{y:{beginAtZero:true,ticks:{stepSize:1,font:{size:10},color:tickColor},grid:{color:gridColor}},y1:{position:"right",beginAtZero:true,grid:{drawOnChartArea:false},ticks:{font:{size:10},color:tickColor,callback:v=>v>=1000?"₹"+(v/1000).toFixed(0)+"K":"₹"+v}}}}});
+
+    destroyChart("conversion");
+    charts.conversion=new Chart(document.getElementById("chartConversion"),{type:"doughnut",data:{labels:["Billed","Pending"],datasets:[{data:[billed.length,pending.length],backgroundColor:["#16a34a","#d97706"],borderWidth:0,hoverOffset:6}]},options:{responsive:true,cutout:"68%",plugins:{legend:{position:"bottom",labels:{font:{size:12},padding:20,usePointStyle:true}},tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${ctx.raw} (${data.length>0?((ctx.raw/data.length)*100).toFixed(1):0}%)`}}}}});
+
+    destroyChart("categories");
+    const cats=topN(data,"mainCategory",7);
+    charts.categories=new Chart(document.getElementById("chartCategories"),{type:"bar",data:{labels:cats.map(c=>c[0]),datasets:[{data:cats.map(c=>c[1]),backgroundColor:["#1a56db","#2563eb","#3b82f6","#60a5fa","#93c5fd","#bfdbfe","#dbeafe"],borderRadius:6,borderSkipped:false}]},options:{indexAxis:"y",responsive:true,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{stepSize:1,font:{size:10},color:tickColor},grid:{color:gridColor}},y:{ticks:{font:{size:11},color:bodyColor},grid:{display:false}}}}});
+
+    destroyChart("sources");
+    const srcs=topN(data,"sourceWalkin",7);
+    charts.sources=new Chart(document.getElementById("chartSources"),{type:"bar",data:{labels:srcs.map(s=>s[0]),datasets:[{data:srcs.map(s=>s[1]),backgroundColor:["#0891b2","#0e7490","#06b6d4","#22d3ee","#67e8f9","#a5f3fc","#cffafe"],borderRadius:6,borderSkipped:false}]},options:{indexAxis:"y",responsive:true,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{stepSize:1,font:{size:10},color:tickColor},grid:{color:gridColor}},y:{ticks:{font:{size:10},color:bodyColor},grid:{display:false}}}}});
+
+    destroyChart("heroes");
+    const hm={};
+    data.forEach(d=>{const h=d.salesHero||"Unknown";if(!hm[h])hm[h]={visits:0,revenue:0};hm[h].visits++;if(d.convStatus==="Billed")hm[h].revenue+=parseFloat(d.totalBillValue)||0;});
+    const he=Object.entries(hm).sort((a,b)=>b[1].visits-a[1].visits).slice(0,8);
+    charts.heroes=new Chart(document.getElementById("chartHeroes"),{type:"bar",data:{labels:he.map(h=>h[0]),datasets:[{label:"Visits",data:he.map(h=>h[1].visits),backgroundColor:"rgba(26,86,219,0.75)",borderRadius:5,yAxisID:"y"},{label:"Revenue (₹)",data:he.map(h=>h[1].revenue),backgroundColor:"rgba(22,163,74,0.75)",borderRadius:5,yAxisID:"y1"}]},options:{responsive:true,plugins:{legend:{position:"top",labels:{font:{size:11},usePointStyle:true,padding:14}}},scales:{y:{beginAtZero:true,ticks:{stepSize:1,font:{size:10},color:tickColor},grid:{color:gridColor}},y1:{position:"right",beginAtZero:true,grid:{drawOnChartArea:false},ticks:{font:{size:10},color:tickColor,callback:v=>v>=1000?"₹"+(v/1000).toFixed(0)+"K":"₹"+v}}}}});
+
+    destroyChart("zones");
+    const zones=topN(data,"areaZone",6);
+    charts.zones=new Chart(document.getElementById("chartZones"),{type:"doughnut",data:{labels:zones.map(z=>z[0]),datasets:[{data:zones.map(z=>z[1]),backgroundColor:["#7c3aed","#6d28d9","#8b5cf6","#a78bfa","#c4b5fd","#ede9fe"],borderWidth:0,hoverOffset:6}]},options:{responsive:true,cutout:"58%",plugins:{legend:{position:"bottom",labels:{font:{size:11},padding:14,usePointStyle:true}}}}});
+
+    destroyChart("fcReasons");
+    const fcm={};
+    pending.forEach(d=>{const k=(d.fcReason||"Not specified").substring(0,28);fcm[k]=(fcm[k]||0)+1;});
+    const fce=Object.entries(fcm).sort((a,b)=>b[1]-a[1]).slice(0,6);
+    charts.fcReasons=new Chart(document.getElementById("chartFCReasons"),{type:"bar",data:{labels:fce.map(f=>f[0]),datasets:[{data:fce.map(f=>f[1]),backgroundColor:["#dc2626","#ef4444","#f87171","#fca5a5","#fecaca","#fee2e2"],borderRadius:6,borderSkipped:false}]},options:{indexAxis:"y",responsive:true,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{stepSize:1,font:{size:10},color:tickColor},grid:{color:gridColor}},y:{ticks:{font:{size:10},color:bodyColor},grid:{display:false}}}}});
+
+    // Weekly breakdown — W1(1-7), W2(8-14), W3(15-21), W4(22-28), W5(29+)
+    destroyChart("weekly");
+    const weekLabels=["Week 1\n1–7","Week 2\n8–14","Week 3\n15–21","Week 4\n22–28","Week 5\n29+"];
+    const wVisits=[0,0,0,0,0], wBilled=[0,0,0,0,0], wRevenue=[0,0,0,0,0];
+    data.forEach(d=>{
+      if(!d._date) return;
+      const w=Math.min(Math.ceil(d._date.getDate()/7),5)-1;
+      wVisits[w]++;
+      if(d.convStatus==="Billed"){wBilled[w]++;wRevenue[w]+=parseFloat(d.totalBillValue)||0;}
+    });
+    charts.weekly=new Chart(document.getElementById("chartWeekly"),{
+      type:"bar",
+      data:{
+        labels:["Week 1 (1–7)","Week 2 (8–14)","Week 3 (15–21)","Week 4 (22–28)","Week 5 (29+)"],
+        datasets:[
+          {label:"Total Visits",data:wVisits,backgroundColor:"rgba(26,86,219,0.7)",borderRadius:6,yAxisID:"y"},
+          {label:"Billed",data:wBilled,backgroundColor:"rgba(22,163,74,0.7)",borderRadius:6,yAxisID:"y"},
+          {label:"Revenue (₹)",data:wRevenue,type:"line",borderColor:"#d97706",backgroundColor:"rgba(217,119,6,0.08)",tension:0.3,pointRadius:4,pointHoverRadius:6,borderWidth:2.5,yAxisID:"y1"}
+        ]
+      },
+      options:{
+        responsive:true,
+        interaction:{mode:"index"},
+        plugins:{legend:{position:"top",labels:{font:{size:11},usePointStyle:true,padding:16}}},
+        scales:{
+          y:{beginAtZero:true,ticks:{stepSize:1,font:{size:11},color:tickColor},grid:{color:gridColor},title:{display:true,text:"Count",font:{size:10},color:tickColor}},
+          y1:{position:"right",beginAtZero:true,grid:{drawOnChartArea:false},ticks:{font:{size:10},color:tickColor,callback:v=>v>=1000?"₹"+(v/1000).toFixed(0)+"K":"₹"+v},title:{display:true,text:"Revenue",font:{size:10},color:tickColor}}
+        }
+      }
+    });
+
+  function renderTable(data) {
+    const sorted=[...data].sort((a,b)=>(b._date||0)-(a._date||0)).slice(0,20);
+    document.getElementById("tableCount").textContent=data.length+" records";
+    document.getElementById("tableBody").innerHTML=sorted.length===0
+      ?`<tr><td colspan="9" class="no-data">No entries for the selected period.</td></tr>`
+      :sorted.map(d=>`<tr>
+        <td class="muted">${d._date?d._date.toLocaleDateString("en-IN",{day:"2-digit",month:"short"}):"—"}</td>
+        <td><strong>${d.salesHero||"—"}</strong></td>
+        <td>${d.customerName||"—"}</td>
+        <td class="muted">${d.cxCity||"—"}</td>
+        <td>${d.mainCategory||"—"}</td>
+        <td class="muted">${(d.itemName||"—").substring(0,22)}</td>
+        <td style="text-align:center;">${d.qty||"—"}</td>
+        <td><span class="badge ${d.convStatus==="Billed"?"badge-green":"badge-orange"}">${d.convStatus||"—"}</span></td>
+        <td style="font-weight:700;">${d.convStatus==="Billed"?fmt(parseFloat(d.totalBillValue)||0):"—"}</td>
+      </tr>`).join("");
+  }
+</script>
+</body>
+</html>

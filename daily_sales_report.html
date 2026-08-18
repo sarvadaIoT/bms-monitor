@@ -764,7 +764,9 @@
 
 <script>
   // ── CONFIG ──
-  const APPS_SCRIPT_URL = "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE";
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyCXbr4-zqr-gnlPpD0PAHFjvDAUpk8F_qUV2pFhkN-xG34WO7tTW6DV-X600WVBZ0/exec";
+  // Must match SUBMIT_TOKEN in apps_script.js — change both together
+  const SUBMIT_TOKEN = "dsp-dblpr-2026-xK9mQ";
 
   // ── Banner date ──
   const now = new Date();
@@ -954,6 +956,7 @@
     const conv = document.querySelector('input[name="convStatus"]:checked');
     return {
       submittedAt:      new Date().toISOString(),
+      submitToken:      SUBMIT_TOKEN,
       state:            document.getElementById("state").value,
       storeCode:        "DBLPR",
       salesHero:        document.getElementById("salesHero").value.trim(),
