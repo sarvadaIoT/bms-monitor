@@ -23,17 +23,31 @@
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
     /* STICKY HEADER */
-    .topbar { position: sticky; top: 0; z-index: 100; background: rgba(15,23,42,0.97); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.07); padding: 0 24px; }
+    .topbar { position: sticky; top: 0; z-index: 100; background: rgba(15,23,42,0.97); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.07); padding: 0 20px; }
     .topbar-inner { max-width: 1280px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 58px; gap: 16px; }
-    .topbar-brand { display: flex; align-items: center; gap: 12px; }
-    .topbar-logo { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg,var(--blue),#60a5fa); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+    .topbar-brand { display: flex; align-items: center; gap: 10px; }
+    .topbar-logo { width: 32px; height: 32px; border-radius: 9px; background: linear-gradient(135deg,var(--blue),#60a5fa); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
     .topbar-title { font-size: 15px; font-weight: 800; color: #fff; letter-spacing: -0.3px; }
     .topbar-sub { font-size: 11px; color: rgba(255,255,255,0.45); margin-top: 1px; }
     .store-badge { padding: 4px 12px; border-radius: 99px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; color: #fff; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.18); }
-    .topbar-right { display: flex; align-items: center; gap: 10px; }
+    .topbar-right { display: flex; align-items: center; gap: 8px; }
     .updated-text { font-size: 11px; color: rgba(255,255,255,0.4); }
     .btn-refresh { display: flex; align-items: center; gap: 5px; padding: 6px 14px; border-radius: 8px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.18); color: #fff; font-size: 12px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
     .btn-refresh:hover { background: rgba(255,255,255,0.2); }
+    /* Mobile: two-row header */
+    @media (max-width: 600px) {
+      .topbar { padding: 0; }
+      .topbar-inner { height: auto; flex-direction: column; align-items: stretch; gap: 0; }
+      .topbar-row1 { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px 6px; }
+      .topbar-row2 { display: flex; align-items: center; justify-content: space-between; padding: 4px 16px 8px; border-top: 1px solid rgba(255,255,255,0.06); }
+      .topbar-sub { display: none; }
+      .topbar-title { font-size: 13px; }
+      .topbar-logo { width: 26px; height: 26px; font-size: 13px; }
+      .btn-refresh { padding: 5px 11px; font-size: 11px; }
+    }
+    @media (min-width: 601px) {
+      .topbar-row1, .topbar-row2 { display: contents; }
+    }
 
     /* PAGE */
     .page { max-width: 1280px; margin: 0 auto; padding: 20px 20px 48px; }
@@ -98,7 +112,6 @@
     .table-count { font-size: 11px; font-weight: 700; color: var(--blue); background: var(--blue-bg); padding: 3px 10px; border-radius: 99px; }
     .tbl-wrap { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; font-size: 12px; }
-    thead { position: sticky; top: 58px; z-index: 10; }
     thead tr { background: #f8fafc; }
     th { padding: 10px 14px; text-align: left; font-weight: 700; color: var(--muted); text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; white-space: nowrap; border-bottom: 1px solid var(--border); }
     tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
@@ -124,23 +137,36 @@
 
 <header class="topbar">
   <div class="topbar-inner">
-    <div class="topbar-brand">
-      <div class="topbar-logo">📊</div>
-      <div>
-        <div class="topbar-title">DSR Dashboard</div>
-        <div class="topbar-sub">Doddabalapur · Daily Sales Analytics</div>
+    <div class="topbar-row1">
+      <div class="topbar-brand">
+        <div class="topbar-logo">📊</div>
+        <div>
+          <div class="topbar-title">DSR Dashboard</div>
+          <div class="topbar-sub">Doddabalapur · Daily Sales Analytics</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <span class="updated-text" id="lastUpdated">Not loaded</span>
+        <button class="btn-refresh" onclick="loadData()">↻ Refresh</button>
       </div>
     </div>
-    <span class="store-badge">DBLPR</span>
-    <div class="topbar-right">
-      <span class="updated-text" id="lastUpdated">Not loaded</span>
-      <button class="btn-refresh" onclick="loadData()">⟳ Refresh</button>
+    <div class="topbar-row2">
+      <span class="store-badge">DBLPR</span>
     </div>
   </div>
 </header>
 
 <div class="page">
   <div class="config-warn" id="configWarn">⚙️ Set <strong>APPS_SCRIPT_URL</strong> and <strong>SUBMIT_TOKEN</strong> in the script section to connect live data.</div>
+
+  <!-- Debug panel -->
+  <div id="debugPanel" style="display:none;background:#0f172a;border-radius:12px;padding:16px 20px;margin-bottom:16px;font-family:monospace;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <span style="font-size:12px;font-weight:700;color:#60a5fa;">&#x1F50D; Connection Debug</span>
+      <button onclick="document.getElementById('debugPanel').style.display='none'" style="background:none;border:none;color:#64748b;cursor:pointer;font-size:16px;">&times;</button>
+    </div>
+    <div id="debugLog" style="font-size:11px;color:#94a3b8;line-height:1.8;"></div>
+  </div>
 
   <div class="filter-card">
     <div class="filter-section">
@@ -218,6 +244,7 @@
     </div>
 
     <div class="section-header"><div class="section-header-line"></div><div class="section-header-text">Category &amp; Source Breakdown</div><div class="section-header-line"></div></div>
+    <div class="charts-row charts-row-2">
       <div class="chart-card"><div class="chart-head"><div class="chart-title-wrap"><div class="chart-icon" style="background:var(--blue-bg);">🛒</div><div><div class="chart-title">Top Categories</div><div class="chart-subtitle">Visits by product category</div></div></div></div><div class="chart-wrap"><canvas id="chartCategories" height="210"></canvas></div></div>
       <div class="chart-card"><div class="chart-head"><div class="chart-title-wrap"><div class="chart-icon" style="background:var(--teal-bg);">📍</div><div><div class="chart-title">Walk-in Sources</div><div class="chart-subtitle">How customers found the store</div></div></div></div><div class="chart-wrap"><canvas id="chartSources" height="210"></canvas></div></div>
     </div>
@@ -265,18 +292,60 @@
     } else { loadData(); }
   };
 
+  function dbg() {}  // debug disabled
+
   function loadData() {
     showStatus("Loading data…");
+    dbg("Fetching: " + APPS_SCRIPT_URL.substring(0,60) + "...", "#60a5fa");
     const url = `${APPS_SCRIPT_URL}?token=${encodeURIComponent(SUBMIT_TOKEN)}&_=${Date.now()}`;
     fetch(url, { redirect: "follow" })
-      .then(r => r.json())
-      .then(json => {
-        if (json.status !== "success") { showStatus("Apps Script error: " + json.message, true); return; }
+      .then(r => {
+        dbg(`HTTP ${r.status} ${r.ok ? "OK" : "FAILED"} (type: ${r.type})`, r.ok ? "#4ade80" : "#f87171");
+        if (r.type === "opaque") {
+          dbg("❌ CORS blocked — response is opaque. Switch to JSONP fallback.", "#f87171");
+          loadDataJSONP(); return Promise.reject("opaque");
+        }
+        return r.text();
+      })
+      .then(text => {
+        dbg("Raw response (first 120 chars): " + text.substring(0,120), "#fbbf24");
+        let json;
+        try { json = JSON.parse(text); } catch(e) { throw new Error("Not valid JSON: " + text.substring(0,80)); }
+        if (json.status !== "success") throw new Error(json.message || "Unknown error");
+        dbg(`✅ Loaded ${json.data.length} rows`, "#4ade80");
         allData = (json.data || []).map(d => ({ ...d, _date: d.submittedAt ? new Date(d.submittedAt) : null }));
         document.getElementById("lastUpdated").textContent = "Updated " + now.toLocaleTimeString("en-IN", { hour:"2-digit", minute:"2-digit" });
         populateFilters(); applyFilters(); hideStatus();
       })
-      .catch(err => showStatus("Failed to load: " + err.message + " — check Apps Script deployment.", true));
+      .catch(err => {
+        if (err === "opaque") return;
+        dbg("❌ Fetch error: " + err, "#f87171");
+        dbg("Trying JSONP fallback...", "#fbbf24");
+        loadDataJSONP();
+      });
+  }
+
+  function loadDataJSONP() {
+    dbg("JSONP attempt started", "#60a5fa");
+    const old = document.getElementById("_jsonp_script");
+    if (old) old.remove();
+    const s = document.createElement("script");
+    s.id = "_jsonp_script";
+    s.src = `${APPS_SCRIPT_URL}?callback=handleDataJSONP&token=${encodeURIComponent(SUBMIT_TOKEN)}&_=${Date.now()}`;
+    const timeout = setTimeout(() => {
+      dbg("❌ JSONP timeout — doGet not deployed or URL is wrong. Go to Apps Script → Deploy → Manage → New version.", "#f87171");
+      showStatus("❌ Cannot reach Apps Script. See the debug panel above for details.", true);
+    }, 10000);
+    window.handleDataJSONP = function(resp) {
+      clearTimeout(timeout);
+      dbg("JSONP callback received: status=" + resp.status + ", rows=" + (resp.data||[]).length, "#4ade80");
+      if (resp.status !== "success") { showStatus("Error: " + resp.message, true); return; }
+      allData = (resp.data || []).map(d => ({ ...d, _date: d.submittedAt ? new Date(d.submittedAt) : null }));
+      document.getElementById("lastUpdated").textContent = "Updated " + now.toLocaleTimeString("en-IN", { hour:"2-digit", minute:"2-digit" });
+      populateFilters(); applyFilters(); hideStatus();
+    };
+    s.onerror = () => { clearTimeout(timeout); dbg("❌ Script load error", "#f87171"); showStatus("Failed to reach Apps Script.", true); };
+    document.body.appendChild(s);
   }
 
   function showStatus(msg, isError) {
@@ -356,17 +425,17 @@
 
     destroyChart("categories");
     const cats=topN(data,"mainCategory",7);
-    charts.categories=new Chart(document.getElementById("chartCategories"),{type:"bar",data:{labels:cats.map(c=>c[0]),datasets:[{data:cats.map(c=>c[1]),backgroundColor:["#1a56db","#2563eb","#3b82f6","#60a5fa","#93c5fd","#bfdbfe","#dbeafe"],borderRadius:6,borderSkipped:false}]},options:{indexAxis:"y",responsive:true,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{stepSize:1,font:{size:10},color:tickColor},grid:{color:gridColor}},y:{ticks:{font:{size:11},color:bodyColor},grid:{display:false}}}}});
+    charts.categories=new Chart(document.getElementById("chartCategories"),{type:"bar",data:{labels:cats.map(c=>c[0]),datasets:[{data:cats.map(c=>c[1]),backgroundColor:["#1a56db","#2563eb","#3b82f6","#60a5fa","#93c5fd","#bfdbfe","#dbeafe"],borderRadius:6,borderSkipped:false,maxBarThickness:28}]},options:{indexAxis:"y",responsive:true,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{stepSize:1,font:{size:10},color:tickColor},grid:{color:gridColor}},y:{ticks:{font:{size:11},color:bodyColor},grid:{display:false}}}}});
 
     destroyChart("sources");
     const srcs=topN(data,"sourceWalkin",7);
-    charts.sources=new Chart(document.getElementById("chartSources"),{type:"bar",data:{labels:srcs.map(s=>s[0]),datasets:[{data:srcs.map(s=>s[1]),backgroundColor:["#0891b2","#0e7490","#06b6d4","#22d3ee","#67e8f9","#a5f3fc","#cffafe"],borderRadius:6,borderSkipped:false}]},options:{indexAxis:"y",responsive:true,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{stepSize:1,font:{size:10},color:tickColor},grid:{color:gridColor}},y:{ticks:{font:{size:10},color:bodyColor},grid:{display:false}}}}});
+    charts.sources=new Chart(document.getElementById("chartSources"),{type:"bar",data:{labels:srcs.map(s=>s[0]),datasets:[{data:srcs.map(s=>s[1]),backgroundColor:["#0891b2","#0e7490","#06b6d4","#22d3ee","#67e8f9","#a5f3fc","#cffafe"],borderRadius:6,borderSkipped:false,maxBarThickness:28}]},options:{indexAxis:"y",responsive:true,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{stepSize:1,font:{size:10},color:tickColor},grid:{color:gridColor}},y:{ticks:{font:{size:10},color:bodyColor},grid:{display:false}}}}});
 
     destroyChart("heroes");
     const hm={};
     data.forEach(d=>{const h=d.salesHero||"Unknown";if(!hm[h])hm[h]={visits:0,revenue:0};hm[h].visits++;if(d.convStatus==="Billed")hm[h].revenue+=parseFloat(d.totalBillValue)||0;});
     const he=Object.entries(hm).sort((a,b)=>b[1].visits-a[1].visits).slice(0,8);
-    charts.heroes=new Chart(document.getElementById("chartHeroes"),{type:"bar",data:{labels:he.map(h=>h[0]),datasets:[{label:"Visits",data:he.map(h=>h[1].visits),backgroundColor:"rgba(26,86,219,0.75)",borderRadius:5,yAxisID:"y"},{label:"Revenue (₹)",data:he.map(h=>h[1].revenue),backgroundColor:"rgba(22,163,74,0.75)",borderRadius:5,yAxisID:"y1"}]},options:{responsive:true,plugins:{legend:{position:"top",labels:{font:{size:11},usePointStyle:true,padding:14}}},scales:{y:{beginAtZero:true,ticks:{stepSize:1,font:{size:10},color:tickColor},grid:{color:gridColor}},y1:{position:"right",beginAtZero:true,grid:{drawOnChartArea:false},ticks:{font:{size:10},color:tickColor,callback:v=>v>=1000?"₹"+(v/1000).toFixed(0)+"K":"₹"+v}}}}});
+    charts.heroes=new Chart(document.getElementById("chartHeroes"),{type:"bar",data:{labels:he.map(h=>h[0]),datasets:[{label:"Visits",data:he.map(h=>h[1].visits),backgroundColor:"rgba(26,86,219,0.75)",borderRadius:5,maxBarThickness:32,yAxisID:"y"},{label:"Revenue (₹)",data:he.map(h=>h[1].revenue),backgroundColor:"rgba(22,163,74,0.75)",borderRadius:5,maxBarThickness:32,yAxisID:"y1"}]},options:{responsive:true,plugins:{legend:{position:"top",labels:{font:{size:11},usePointStyle:true,padding:14}}},scales:{y:{beginAtZero:true,ticks:{stepSize:1,font:{size:10},color:tickColor},grid:{color:gridColor}},y1:{position:"right",beginAtZero:true,grid:{drawOnChartArea:false},ticks:{font:{size:10},color:tickColor,callback:v=>v>=1000?"₹"+(v/1000).toFixed(0)+"K":"₹"+v}}}}});
 
     destroyChart("zones");
     const zones=topN(data,"areaZone",6);
@@ -393,8 +462,8 @@
       data:{
         labels:["Week 1 (1–7)","Week 2 (8–14)","Week 3 (15–21)","Week 4 (22–28)","Week 5 (29+)"],
         datasets:[
-          {label:"Total Visits",data:wVisits,backgroundColor:"rgba(26,86,219,0.7)",borderRadius:6,yAxisID:"y"},
-          {label:"Billed",data:wBilled,backgroundColor:"rgba(22,163,74,0.7)",borderRadius:6,yAxisID:"y"},
+          {label:"Total Visits",data:wVisits,backgroundColor:"rgba(26,86,219,0.7)",borderRadius:6,maxBarThickness:36,yAxisID:"y"},
+          {label:"Billed",data:wBilled,backgroundColor:"rgba(22,163,74,0.7)",borderRadius:6,maxBarThickness:36,yAxisID:"y"},
           {label:"Revenue (₹)",data:wRevenue,type:"line",borderColor:"#d97706",backgroundColor:"rgba(217,119,6,0.08)",tension:0.3,pointRadius:4,pointHoverRadius:6,borderWidth:2.5,yAxisID:"y1"}
         ]
       },
@@ -408,6 +477,7 @@
         }
       }
     });
+  }  // end renderCharts
 
   function renderTable(data) {
     const sorted=[...data].sort((a,b)=>(b._date||0)-(a._date||0)).slice(0,20);
