@@ -267,27 +267,17 @@
 
   function loadData() {
     showStatus("Loading data…");
-    const old = document.getElementById("_jsonp_script");
-    if (old) old.remove();
-    const s = document.createElement("script");
-    s.id = "_jsonp_script";
-    s.src = `${APPS_SCRIPT_URL}?callback=handleData&token=${encodeURIComponent(SUBMIT_TOKEN)}&_=${Date.now()}`;
-    // Timeout fallback — JSONP gives no response if doGet isn't deployed
-    const timeout = setTimeout(() => showStatus("No response from Apps Script. Make sure doGet is deployed (Deploy → Manage → New version).", true), 10000);
-    window.handleData = function(resp) {
-      clearTimeout(timeout);
-      _originalHandleData(resp);
-    };
-    s.onerror = () => { clearTimeout(timeout); showStatus("Failed to load. Check the URL and connection.", true); };
-    document.body.appendChild(s);
+    const url = `${APPS_SCRIPT_URL}?token=${encodeURIComponent(SUBMIT_TOKEN)}&_=${Date.now()}`;
+    fetch(url, { redirect: "follow" })
+      .then(r => r.json())
+      .then(json => {
+        if (json.status !== "success") { showStatus("Apps Script error: " + json.message, true); return; }
+        allData = (json.data || []).map(d => ({ ...d, _date: d.submittedAt ? new Date(d.submittedAt) : null }));
+        document.getElementById("lastUpdated").textContent = "Updated " + now.toLocaleTimeString("en-IN", { hour:"2-digit", minute:"2-digit" });
+        populateFilters(); applyFilters(); hideStatus();
+      })
+      .catch(err => showStatus("Failed to load: " + err.message + " — check Apps Script deployment.", true));
   }
-
-  window._originalHandleData = function(resp) {
-    if (resp.status !== "success") { showStatus("Error: " + resp.message, true); return; }
-    allData = (resp.data || []).map(d => ({ ...d, _date: d.submittedAt ? new Date(d.submittedAt) : null }));
-    document.getElementById("lastUpdated").textContent = "Updated " + now.toLocaleTimeString("en-IN", { hour:"2-digit", minute:"2-digit" });
-    populateFilters(); applyFilters(); hideStatus();
-  };
 
   function showStatus(msg, isError) {
     const bar = document.getElementById("statusBar");
